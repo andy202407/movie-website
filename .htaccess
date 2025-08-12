@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# API路由 - 直接指向index.php
+RewriteRule ^api/(.*)$ index.php [QSA,L]
+
+# 其他所有请求也指向index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]

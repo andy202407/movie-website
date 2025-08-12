@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /user/
+
+# 特定爬虫规则
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 1
+
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: 360Spider
+Crawl-delay: 3
+
+User-agent: Sogou web spider
+Crawl-delay: 2
+
+# 网站地图
+Sitemap: https://yuyuyy.com/rss/google.xml
