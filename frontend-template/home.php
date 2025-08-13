@@ -103,8 +103,45 @@
 
 <!-- 内容区域 -->
 <div class="container">
-    <?php foreach ($categories ?? [] as $category): ?>
-        <?php $categoryVideos = array_filter($videos ?? [], function($video) use ($category) { return $video['category_id'] == $category['id']; }); ?>
+    <?php 
+    // 记录已经显示过的视频，避免重复显示
+    $displayedVideos = [];
+    
+    // 为每个视频找到最适合的分类（分类名称中排在前面的分类）
+    $videoCategoryMapping = [];
+    foreach ($videos ?? [] as $video) {
+        if (isset($video['category_ids']) && is_array($video['category_ids']) && !empty($video['category_ids'])) {
+            // 找到分类名称中排在前面的分类（第一个分类）
+            $firstCategoryId = $video['category_ids'][0];
+            $videoCategoryMapping[$video['id']] = $firstCategoryId;
+        } elseif (isset($video['category_id'])) {
+            // 兼容旧数据
+            $videoCategoryMapping[$video['id']] = $video['category_id'];
+        }
+    }
+    
+    foreach ($categories ?? [] as $category): ?>
+        <?php 
+        // 筛选属于当前分类且未显示过的视频
+        $categoryVideos = array_filter($videos ?? [], function($video) use ($category, $displayedVideos, $videoCategoryMapping) { 
+            // 如果视频已经显示过，跳过
+            if (in_array($video['id'], $displayedVideos)) {
+                return false;
+            }
+            
+            // 检查视频是否应该显示在当前分类中
+            return isset($videoCategoryMapping[$video['id']]) && $videoCategoryMapping[$video['id']] == $category['id'];
+        }); 
+        
+        // 只取前6个视频
+        $categoryVideos = array_slice($categoryVideos, 0, 6);
+        
+        // 将显示的视频ID添加到已显示列表中
+        foreach ($categoryVideos as $video) {
+            $displayedVideos[] = $video['id'];
+        }
+        ?>
+        
         <?php if (!empty($categoryVideos)): ?>
         <div class="public-box">
             <div class="public-list-box-x public-con-hdt rel">
@@ -118,7 +155,7 @@
             
             <div class="public-r list-swiper rel overflow">
                 <div class="swiper-wrapper">
-                    <?php foreach (array_slice($categoryVideos, 0, 6) as $video): ?>
+                    <?php foreach ($categoryVideos as $video): ?>
                     <div class="public-list-box public-pic-b swiper-slide">
                         <div class="public-list-div public-list-bj">
                             <a target="_blank" class="public-list-exp" href="?page=play&id=<?= $video['id'] ?>" title="<?= $this->escape($video['title']) ?>">
@@ -127,6 +164,20 @@
                                      src="<?= $this->escape($video['poster']) ?>"
                                      alt="<?= $this->escape($video['title']) ?>封面图" />
                                 <span class="public-bg"></span>
+                                
+                                <!-- 精致的分类标签 -->
+                                <div class="category-badge-top">
+                                    <?php 
+                                    if (isset($video['category_names']) && count($video['category_names']) > 1) {
+                                        // 多个分类用/分隔
+                                        echo implode(' / ', array_slice($video['category_names'], 0, 3)); // 最多显示3个分类
+                                    } else {
+                                        // 单个分类
+                                        echo $video['category_name'] ?? '影片';
+                                    }
+                                    ?>
+                                </div>
+                                
                                 <span class="public-prt hide cr6" style="">热映推荐</span>
                                 <span class="public-list-prb hide ft2">
                                     评分: <?= $this->escape($video['rating']) ?>
@@ -180,6 +231,49 @@
 .home-category-nav {
     margin: 2rem 0 3rem;
     text-align: center;
+}
+
+/* 精致的分类标签样式 */
+.category-badge-top {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    max-width: 80px;
+    text-align: center;
+    line-height: 1.2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    backdrop-filter: blur(5px);
+    z-index: 10;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.category-badge-top:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+/* 确保图片容器有相对定位 */
+.public-list-div {
+    position: relative;
+}
+
+/* 优化分类标签在小屏幕上的显示 */
+@media (max-width: 768px) {
+    .category-badge-top {
+        font-size: 10px;
+        padding: 3px 6px;
+        max-width: 70px;
+        top: 6px;
+        right: 6px;
+    }
 }
 
 .section-title {

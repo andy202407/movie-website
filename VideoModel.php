@@ -13,11 +13,9 @@ class VideoModel {
     
     public function getAllVideos() {
         $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
-                       v.region, v.year, v.category_id, v.duration, v.status, v.is_recommended,
-                       v.director, v.actor, v.rating,
-                       c.name as category_name 
+                       v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                       v.director, v.actor, v.rating
                 FROM videos v 
-                LEFT JOIN categories c ON v.category_id = c.id 
                 WHERE v.status = 'published' 
                 ORDER BY v.created_at DESC";
         $videos = $this->db->fetchAll($sql);
@@ -26,11 +24,9 @@ class VideoModel {
     
     public function getVideoById($id) {
         $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
-                       v.region, v.year, v.category_id, v.duration, v.status, v.is_recommended,
-                       v.director, v.actor, v.rating,
-                       c.name as category_name 
+                       v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                       v.director, v.actor, v.rating
                 FROM videos v 
-                LEFT JOIN categories c ON v.category_id = c.id 
                 WHERE v.id = ? AND v.status = 'published'";
         $video = $this->db->fetchOne($sql, [$id]);
         return $video ? $this->formatVideo($video) : null;
@@ -38,14 +34,25 @@ class VideoModel {
     
     public function getVideosByCategory($categoryId) {
         $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
-                       v.region, v.year, v.category_id, v.duration, v.status, v.is_recommended,
-                       v.director, v.actor, v.rating,
-                       c.name as category_name 
+                       v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                       v.director, v.actor, v.rating
                 FROM videos v 
-                LEFT JOIN categories c ON v.category_id = c.id 
-                WHERE v.category_id = ? AND v.status = 'published' 
+                WHERE v.status = 'published' 
+                AND (
+                    v.categories LIKE ? OR 
+                    v.categories LIKE ? OR 
+                    v.categories LIKE ? OR
+                    v.categories LIKE ?
+                ) 
                 ORDER BY v.created_at DESC";
-        $videos = $this->db->fetchAll($sql, [$categoryId]);
+        
+        // 更精确的匹配模式，避免误匹配
+        $searchPattern1 = '%[' . $categoryId . ',%';      // [1,2,3
+        $searchPattern2 = '%,' . $categoryId . ',%';      // ,1,2
+        $searchPattern3 = '%,' . $categoryId . ']%';      // ,1]
+        $searchPattern4 = '%[' . $categoryId . ']%';      // [1]
+        
+        $videos = $this->db->fetchAll($sql, [$searchPattern1, $searchPattern2, $searchPattern3, $searchPattern4]);
         return $this->formatVideos($videos);
     }
     
@@ -81,11 +88,9 @@ class VideoModel {
     
     public function getRecommendedVideos($limit = 4) {
         $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
-                       v.region, v.year, v.category_id, v.duration, v.status, v.is_recommended,
-                       v.director, v.actor, v.rating,
-                       c.name as category_name 
+                       v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                       v.director, v.actor, v.rating
                 FROM videos v 
-                LEFT JOIN categories c ON v.category_id = c.id 
                 WHERE v.status = 'published' AND v.is_recommended = 1 
                 ORDER BY v.created_at DESC 
                 LIMIT ?";
@@ -99,11 +104,9 @@ class VideoModel {
             $notInClause = $videoIds ? "AND v.id NOT IN ($placeholders)" : '';
             
             $sql2 = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
-                            v.region, v.year, v.category_id, v.duration, v.status, v.is_recommended,
-                            v.director, v.actor, v.rating,
-                            c.name as category_name 
+                            v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                            v.director, v.actor, v.rating
                      FROM videos v 
-                     LEFT JOIN categories c ON v.category_id = c.id 
                      WHERE v.status = 'published' 
                      $notInClause
                      ORDER BY v.created_at DESC 
@@ -118,11 +121,9 @@ class VideoModel {
     
     public function searchVideos($keyword) {
         $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
-                       v.region, v.year, v.category_id, v.duration, v.status, v.is_recommended,
-                       v.director, v.actor, v.rating,
-                       c.name as category_name 
+                       v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                       v.director, v.actor, v.rating
                 FROM videos v 
-                LEFT JOIN categories c ON v.category_id = c.id 
                 WHERE v.status = 'published' 
                 AND (v.title LIKE ? OR v.intro LIKE ?) 
                 ORDER BY v.created_at DESC";
@@ -134,11 +135,9 @@ class VideoModel {
     public function getBannerVideos($limit = 3) {
         // 严格按照 is_recommended = 1 获取轮播图影片
         $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
-                       v.region, v.year, v.category_id, v.duration, v.status, v.is_recommended,
-                       v.director, v.actor, v.rating,
-                       c.name as category_name 
+                       v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                       v.director, v.actor, v.rating
                 FROM videos v 
-                LEFT JOIN categories c ON v.category_id = c.id 
                 WHERE v.status = 'published' 
                 AND v.is_recommended = 1 
                 ORDER BY v.created_at DESC 
@@ -152,11 +151,9 @@ class VideoModel {
     
     public function getLatestVideos($limit = 5) {
         $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
-                       v.region, v.year, v.category_id, v.duration, v.status, v.is_recommended,
-                       v.director, v.actor, v.rating,
-                       c.name as category_name 
+                       v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                       v.director, v.actor, v.rating
                 FROM videos v 
-                LEFT JOIN categories c ON v.category_id = c.id 
                 WHERE v.status = 'published' 
                 ORDER BY v.created_at DESC 
                 LIMIT ?";
@@ -195,10 +192,58 @@ class VideoModel {
             }
         }
         
+        // 处理多个分类
+        $categoryNames = [];
+        $categoryIds = [];
+        if (!empty($video['categories'])) {
+            // 处理categories字段，可能是JSON格式或字符串格式
+            if (is_string($video['categories'])) {
+                // 去除可能的外层双引号
+                $cleanCategories = trim($video['categories'], '"');
+                
+                // 尝试解析为JSON
+                $decoded = json_decode($cleanCategories, true);
+                if (is_array($decoded)) {
+                    $categoryIds = $decoded;
+                } else {
+                    // 如果不是有效的JSON，尝试解析为数组字符串
+                    $str = trim($cleanCategories, '[]');
+                    if (!empty($str)) {
+                        $categoryIds = array_map('intval', explode(',', $str));
+                    }
+                }
+            } elseif (is_array($video['categories'])) {
+                $categoryIds = $video['categories'];
+            }
+            
+            if (is_array($categoryIds)) {
+                foreach ($categoryIds as $catId) {
+                    // 过滤掉无效的分类ID
+                    if ($catId > 0) {
+                        $category = $this->getCategoryById($catId);
+                        if ($category) {
+                            $categoryNames[] = $category['name'];
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 如果没有分类信息，使用旧的category_id作为备用
+        if (empty($categoryNames) && !empty($video['category_id'])) {
+            $category = $this->getCategoryById($video['category_id']);
+            if ($category) {
+                $categoryNames[] = $category['name'];
+                $categoryIds = [$video['category_id']];
+            }
+        }
+        
         return [
             'id' => $video['id'],
             'title' => $video['title'],
-            'category_id' => $video['category_id'],
+            'category_ids' => $categoryIds,
+            'category_names' => $categoryNames,
+            'category_name' => implode(' / ', $categoryNames), // 兼容旧代码
             'poster' => $poster,
             'banner' => $banner,
             'video_url' => $videoUrl,
@@ -210,7 +255,6 @@ class VideoModel {
             'actor' => $video['actor'] ?: '暂无演员信息',
             'status' => $video['status'] === 'published' ? '已完结' : '更新中',
             'is_recommended' => $video['is_recommended'] ?? 0,
-            'category_name' => $video['category_name'] ?? '未分类',
             'region' => $video['region'] ?: '未知地区'
         ];
     }

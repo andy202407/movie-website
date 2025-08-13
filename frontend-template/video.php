@@ -84,8 +84,8 @@
                     <a href="?page=play&id=<?= $video['id'] ?>" class="btn-play">
                         <i class="fa ds-bofang1"></i>立即播放
                     </a>
-                    <a href="?page=list&category=<?= $video['category_id'] ?>" class="btn-more">
-                        <i class="fa ds-liebiao"></i>更多<?= $this->escape($category['name']) ?>
+                    <a href="?page=list&category=<?= $video['category_ids'][0] ?? '' ?>" class="btn-more">
+                        <i class="fa ds-liebiao"></i>更多<?= $this->escape($video['category_names'][0] ?? '影片') ?>
                     </a>
                     <a href="javascript:void(0)" class="btn-collect" onclick="alert('收藏功能')">
                         <i class="fa ds-shoucang"></i>收藏

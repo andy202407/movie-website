@@ -91,7 +91,7 @@
                         </a>
                     </h3>
                     <div class="video-meta">
-                        <span class="video-category"><?= $this->escape($categories[$video['category_id']]['name'] ?? '影片') ?></span>
+                        <span class="video-category"><?= $this->escape($video['category_name'] ?? '影片') ?></span>
                         <span class="video-duration"><?= $this->escape($video['duration']) ?></span>
                     </div>
                     <div class="video-desc">

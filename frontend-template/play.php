@@ -582,7 +582,7 @@ html, body {
                     <div class="plist-body">
                         <div class="switch-box top20">
                             <div class="check selected">
-                                <h2><a href="?page=list&category=<?= $video['category_id'] ?>" target="_blank" class="player-title-link"><?= $this->escape($video['title']) ?></a></h2>
+                                <h2><a href="?page=list&category=<?= $video['category_ids'][0] ?? '' ?>" target="_blank" class="player-title-link"><?= $this->escape($video['title']) ?></a></h2>
                                 <div class="player-details flex wrap">
                                     <i class="fa r3 co8">&#xe596;</i><em>观看</em><span class="division">·</span>
                                     <span title="<?= $this->escape($video['year']) ?>" ><?= $this->escape($video['year']) ?></span><span class="division">·</span>
