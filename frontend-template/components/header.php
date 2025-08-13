@@ -1,7 +1,7 @@
 <?php
-// 获取分类数据
+// 获取父分类数据
 $videoModel = new VideoModel();
-$categories = $videoModel->getAllCategories();
+$parentCategories = $videoModel->getParentCategories();
 ?>
 <style>
 /* 隐藏PC端搜索按钮 */
@@ -59,15 +59,53 @@ $categories = $videoModel->getAllCategories();
         <div class="head-nav ft4 roll bold0 pc-show1 wap-show1">
             <ul class="swiper-wrapper">
                 <li class="swiper-slide"><a target="_self" href="/" class="<?= ($_GET['page'] ?? 'home') == 'home' ? 'current cor6' : '' ?>"><em class="fa ds-zhuye"></em><em class="fa none ds-zhuye2"></em>首页</a></li>
-                <?php foreach ($categories as $cat): ?>
-                <li class="swiper-slide"><a target="_self" href="/?page=list&category=<?= $cat['id'] ?>" class="<?= (($_GET['page'] ?? '') == 'list' && ($_GET['category'] ?? '') == $cat['id']) ? 'current cor6' : '' ?>"><em class="fa ds-dianying"></em><em class="fa none ds-dianying2"></em><?= $this->escape($cat['name']) ?></a></li>
+                <?php foreach ($parentCategories as $cat): ?>
+                <li class="swiper-slide"><a target="_self" href="/?page=list&category=<?= $cat['id'] ?>" class="<?= (($_GET['page'] ?? '') == 'list' && ($_GET['category'] ?? '') == $cat['id']) ? 'current cor6' : '' ?>">
+                    <?php if ($cat['name'] == '电影'): ?>
+                        <em class="fa ds-dianying"></em><em class="fa none ds-dianying2"></em>
+                    <?php elseif ($cat['name'] == '电视剧'): ?>
+                        <em class="fa ds-dianshi"></em><em class="fa none ds-dianshi2"></em>
+                    <?php elseif ($cat['name'] == '综艺'): ?>
+                        <em class="fa ds-zongyi"></em><em class="fa none ds-zongyi2"></em>
+                    <?php elseif ($cat['name'] == '动漫'): ?>
+                        <em class="fa ds-dongman"></em><em class="fa none ds-dongman2"></em>
+                    <?php elseif ($cat['name'] == '短剧'): ?>
+                        <em class="fa ds-dianshi"></em><em class="fa none ds-dianshi2"></em>
+                    <?php elseif ($cat['name'] == '纪录片'): ?>
+                        <em class="fa ds-ziyuan"></em><em class="fa none ds-ziyuan2"></em>
+                    <?php elseif ($cat['name'] == '有声电子书'): ?>
+                        <em class="fa ds-ziyuan"></em><em class="fa none ds-ziyuan2"></em>
+                    <?php else: ?>
+                        <em class="fa ds-dianying"></em><em class="fa none ds-dianying2"></em>
+                    <?php endif; ?>
+                    <?= $this->escape($cat['name']) ?>
+                </a></li>
                 <?php endforeach; ?>
                 <li class="rel head-more-a">
                     <a class="this-get" href="javascript:">更多<em class="fa nav-more" style="font-size:18px">&#xe563;</em></a>
                     <div class="head-more none box size">
                         <a target="_self" href="/" class="nav-link none2 <?= ($_GET['page'] ?? 'home') == 'home' ? 'cor6' : '' ?>"><em class="fa ds-zhuye"></em><em class="fa none ds-zhuye2"></em>首页</a>
-                        <?php foreach ($categories as $cat): ?>
-                        <a target="_self" href="/?page=list&category=<?= $cat['id'] ?>" class="nav-link none2 <?= (($_GET['page'] ?? '') == 'list' && ($_GET['category'] ?? '') == $cat['id']) ? 'cor6' : '' ?>"><em class="fa ds-dianying"></em><em class="fa none ds-dianying2"></em><?= $this->escape($cat['name']) ?></a>
+                        <?php foreach ($parentCategories as $cat): ?>
+                        <a target="_self" href="/?page=list&category=<?= $cat['id'] ?>" class="nav-link none2 <?= (($_GET['page'] ?? '') == 'list' && ($_GET['category'] ?? '') == $cat['id']) ? 'cor6' : '' ?>">
+                            <?php if ($cat['name'] == '电影'): ?>
+                                <em class="fa ds-dianying"></em><em class="fa none ds-dianying2"></em>
+                            <?php elseif ($cat['name'] == '电视剧'): ?>
+                                <em class="fa ds-dianshi"></em><em class="fa none ds-dianshi2"></em>
+                            <?php elseif ($cat['name'] == '综艺'): ?>
+                                <em class="fa ds-zongyi"></em><em class="fa none ds-zongyi2"></em>
+                            <?php elseif ($cat['name'] == '动漫'): ?>
+                                <em class="fa ds-dongman"></em><em class="fa none ds-dongman2"></em>
+                            <?php elseif ($cat['name'] == '短剧'): ?>
+                                <em class="fa ds-dianshi"></em><em class="fa none ds-dianshi2"></em>
+                            <?php elseif ($cat['name'] == '纪录片'): ?>
+                                <em class="fa ds-ziyuan"></em><em class="fa none ds-ziyuan2"></em>
+                            <?php elseif ($cat['name'] == '有声电子书'): ?>
+                                <em class="fa ds-ziyuan"></em><em class="fa none ds-ziyuan2"></em>
+                            <?php else: ?>
+                                <em class="fa ds-dianying"></em><em class="fa none ds-dianshi2"></em>
+                            <?php endif; ?>
+                            <?= $this->escape($cat['name']) ?>
+                        </a>
                         <?php endforeach; ?>
                         <a href="/" class="nav-link"><em class="fa ds-zhou"></em><em class="fa none ds-zhou2"></em>每日更新</a>
                     </div>

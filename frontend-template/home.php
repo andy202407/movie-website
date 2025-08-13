@@ -103,53 +103,19 @@
 
 <!-- 内容区域 -->
 <div class="container">
-    <?php 
-    // 记录已经显示过的视频，避免重复显示
-    $displayedVideos = [];
-    
-    // 为每个视频找到最适合的分类（分类名称中排在前面的分类）
-    $videoCategoryMapping = [];
-    foreach ($videos ?? [] as $video) {
-        if (isset($video['category_ids']) && is_array($video['category_ids']) && !empty($video['category_ids'])) {
-            // 找到分类名称中排在前面的分类（第一个分类）
-            $firstCategoryId = $video['category_ids'][0];
-            $videoCategoryMapping[$video['id']] = $firstCategoryId;
-        } elseif (isset($video['category_id'])) {
-            // 兼容旧数据
-            $videoCategoryMapping[$video['id']] = $video['category_id'];
-        }
-    }
-    
-    foreach ($categories ?? [] as $category): ?>
+    <?php foreach ($parentCategoryVideos ?? [] as $parentCategoryId => $parentCategoryData): ?>
         <?php 
-        // 筛选属于当前分类且未显示过的视频
-        $categoryVideos = array_filter($videos ?? [], function($video) use ($category, $displayedVideos, $videoCategoryMapping) { 
-            // 如果视频已经显示过，跳过
-            if (in_array($video['id'], $displayedVideos)) {
-                return false;
-            }
-            
-            // 检查视频是否应该显示在当前分类中
-            return isset($videoCategoryMapping[$video['id']]) && $videoCategoryMapping[$video['id']] == $category['id'];
-        }); 
-        
-        // 只取前6个视频
-        $categoryVideos = array_slice($categoryVideos, 0, 6);
-        
-        // 将显示的视频ID添加到已显示列表中
-        foreach ($categoryVideos as $video) {
-            $displayedVideos[] = $video['id'];
-        }
+        $parentCategory = $parentCategoryData['category'];
+        $categoryVideos = $parentCategoryData['videos'];
         ?>
         
-        <?php if (!empty($categoryVideos)): ?>
         <div class="public-box">
             <div class="public-list-box-x public-con-hdt rel">
                 <h2 class="public-list-head padding-b public-padding-l" style="margin-bottom:0;">
-                    <i class="fa public-list-icon ds-tuijian"></i><?= $this->escape($category['name']) ?>
+                    <i class="fa public-list-icon ds-tuijian"></i><?= $this->escape($parentCategory['name']) ?>
                 </h2>
                 <div class="more-link">
-                    <a href="?page=list&category=<?= $category['id'] ?>" class="more-btn">更多<i class="fa">&#xe622;</i></a>
+                    <a href="?page=list&category=<?= $parentCategory['id'] ?>" class="more-btn">更多<i class="fa">&#xe622;</i></a>
                 </div>
             </div>
             
@@ -194,7 +160,6 @@
                 </div>
             </div>
         </div>
-        <?php endif; ?>
     <?php endforeach; ?>
 </div>
 

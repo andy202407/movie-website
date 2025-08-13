@@ -106,7 +106,21 @@ class Router {
     }
     
     private function home() {
-        $videos = $this->videoModel->getAllVideos();
+        // 获取父分类
+        $parentCategories = $this->videoModel->getParentCategories();
+        
+        // 为每个父分类获取最新的10部影片
+        $parentCategoryVideos = [];
+        foreach ($parentCategories as $parentCategory) {
+            $videos = $this->videoModel->getLatestVideosByParentCategory($parentCategory['id'], 10);
+            if (!empty($videos)) {
+                $parentCategoryVideos[$parentCategory['id']] = [
+                    'category' => $parentCategory,
+                    'videos' => $videos
+                ];
+            }
+        }
+        
         $categories = $this->videoModel->getAllCategories();
         $recommended = $this->videoModel->getRecommendedVideos(6);
         $bannerVideos = $this->videoModel->getBannerVideos(3); // 轮播图用的banner影片
@@ -119,7 +133,7 @@ class Router {
         
         $this->templateEngine->assignArray([
             'title' => '鱼鱼影院 - 免费在线观看高清电影电视剧综艺动漫',
-            'videos' => $videos,
+            'parentCategoryVideos' => $parentCategoryVideos,
             'categories' => $categories,
             'categoryMap' => $categoryMap,
             'recommended' => $recommended,
@@ -227,6 +241,8 @@ class Router {
         $this->templateEngine->display('category');
     }
     
+
+    
     private function list() {
         $categoryId = $_GET['category'] ?? 0;
         $page = max(1, intval($_GET['p'] ?? 1));
@@ -252,7 +268,12 @@ class Router {
         }
         
         // 获取分类下的所有视频（支持筛选）
-        $allVideos = $this->videoModel->getVideosByCategory($categoryId);
+        // 检查是否为父分类，如果是则获取其下所有子分类的影片
+        if ($this->videoModel->isParentCategory($categoryId)) {
+            $allVideos = $this->videoModel->getVideosByParentCategory($categoryId);
+        } else {
+            $allVideos = $this->videoModel->getVideosByCategory($categoryId);
+        }
         
         // 应用筛选条件
         if (!empty($filterYear) || !empty($filterRegion) || !empty($filterCategory)) {
@@ -322,8 +343,7 @@ class Router {
         $availableRegions = [];
         $availableFilterCategories = [];
         
-        // 从所有影片中提取可用的筛选选项（全局筛选）
-        $allVideos = $this->videoModel->getAllVideos();
+        // 从当前分类下的影片中提取可用的筛选选项（只显示当前分类下的选项）
         foreach ($allVideos as $video) {
             // 年份
             if (!empty($video['year']) && $video['year'] != '未知') {
@@ -336,9 +356,24 @@ class Router {
             }
         }
         
-        // 分类筛选选项包含所有分类（全局筛选）
-        foreach ($categories as $cat) {
-            $availableFilterCategories[] = $cat['id'];
+        // 分类筛选选项：智能判断
+        if ($this->videoModel->isParentCategory($categoryId)) {
+            // 获取当前父分类下的所有子分类ID
+            $childCategories = $this->videoModel->getChildCategories($categoryId);
+            if (!empty($childCategories)) {
+                // 如果有子分类，只显示子分类
+                $availableFilterCategories = array_column($childCategories, 'id');
+            } else {
+                // 如果没有子分类，显示所有分类
+                foreach ($categories as $cat) {
+                    $availableFilterCategories[] = $cat['id'];
+                }
+            }
+        } else {
+            // 如果是子分类，显示所有分类
+            foreach ($categories as $cat) {
+                $availableFilterCategories[] = $cat['id'];
+            }
         }
         
         // 去重并排序

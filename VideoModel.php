@@ -56,6 +56,50 @@ class VideoModel {
         return $this->formatVideos($videos);
     }
     
+    public function getVideosByParentCategory($parentCategoryId) {
+        // 首先获取该父分类下的所有子分类ID
+        $sql = "SELECT id FROM categories WHERE parent_id = ?";
+        $childCategories = $this->db->fetchAll($sql, [$parentCategoryId]);
+        
+        if (empty($childCategories)) {
+            return [];
+        }
+        
+        $childCategoryIds = array_column($childCategories, 'id');
+        
+        // 构建查询条件，查找包含任一子分类ID的影片
+        $conditions = [];
+        $params = [];
+        
+        foreach ($childCategoryIds as $catId) {
+            $conditions[] = "(
+                v.categories LIKE ? OR 
+                v.categories LIKE ? OR 
+                v.categories LIKE ? OR
+                v.categories LIKE ?
+            )";
+            
+            // 更精确的匹配模式
+            $searchPattern1 = '%[' . $catId . ',%';      // [1,2,3
+            $searchPattern2 = '%,' . $catId . ',%';      // ,1,2
+            $searchPattern3 = '%,' . $catId . ']%';      // ,1]
+            $searchPattern4 = '%[' . $catId . ']%';      // [1]
+            
+            $params = array_merge($params, [$searchPattern1, $searchPattern2, $searchPattern3, $searchPattern4]);
+        }
+        
+        $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
+                       v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                       v.director, v.actor, v.rating
+                FROM videos v 
+                WHERE v.status = 'published' 
+                AND (" . implode(' OR ', $conditions) . ")
+                ORDER BY v.created_at DESC";
+        
+        $videos = $this->db->fetchAll($sql, $params);
+        return $this->formatVideos($videos);
+    }
+    
     public function getAllCategories() {
         $sql = "SELECT * FROM categories ORDER BY sort_order ASC";
         $categories = $this->db->fetchAll($sql);
@@ -70,6 +114,87 @@ class VideoModel {
             ];
         }
         return $result;
+    }
+    
+    public function getParentCategories() {
+        $sql = "SELECT * FROM categories WHERE parent_id IS NULL ORDER BY sort_order ASC";
+        $categories = $this->db->fetchAll($sql);
+        
+        $result = [];
+        foreach ($categories as $category) {
+            $result[] = [
+                'id' => (int)$category['id'],
+                'name' => $category['name'],
+                'slug' => strtolower(str_replace(['片', '剧'], ['', ''], $category['name']))
+            ];
+        }
+        return $result;
+    }
+    
+    public function isParentCategory($categoryId) {
+        $sql = "SELECT parent_id FROM categories WHERE id = ?";
+        $result = $this->db->fetchOne($sql, [$categoryId]);
+        return $result && $result['parent_id'] === null;
+    }
+    
+    public function getChildCategories($parentCategoryId) {
+        $sql = "SELECT * FROM categories WHERE parent_id = ? ORDER BY sort_order ASC";
+        $categories = $this->db->fetchAll($sql, [$parentCategoryId]);
+        
+        $result = [];
+        foreach ($categories as $category) {
+            $result[] = [
+                'id' => (int)$category['id'],
+                'name' => $category['name'],
+                'slug' => strtolower(str_replace(['片', '剧'], ['', ''], $category['name']))
+            ];
+        }
+        return $result;
+    }
+    
+    public function getLatestVideosByParentCategory($parentCategoryId, $limit = 10) {
+        // 首先获取该父分类下的所有子分类ID
+        $sql = "SELECT id FROM categories WHERE parent_id = ?";
+        $childCategories = $this->db->fetchAll($sql, [$parentCategoryId]);
+        
+        if (empty($childCategories)) {
+            return [];
+        }
+        
+        $childCategoryIds = array_column($childCategories, 'id');
+        
+        // 构建查询条件，查找包含任一子分类ID的影片
+        $conditions = [];
+        $params = [];
+        
+        foreach ($childCategoryIds as $catId) {
+            $conditions[] = "(
+                v.categories LIKE ? OR 
+                v.categories LIKE ? OR 
+                v.categories LIKE ? OR
+                v.categories LIKE ?
+            )";
+            
+            // 更精确的匹配模式
+            $searchPattern1 = '%[' . $catId . ',%';      // [1,2,3
+            $searchPattern2 = '%,' . $catId . ',%';      // ,1,2
+            $searchPattern3 = '%,' . $catId . ']%';      // ,1]
+            $searchPattern4 = '%[' . $catId . ']%';      // [1]
+            
+            $params = array_merge($params, [$searchPattern1, $searchPattern2, $searchPattern3, $searchPattern4]);
+        }
+        
+        $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
+                       v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,
+                       v.director, v.actor, v.rating
+                FROM videos v 
+                WHERE v.status = 'published' 
+                AND (" . implode(' OR ', $conditions) . ")
+                ORDER BY v.created_at DESC 
+                LIMIT " . intval($limit);
+        
+        $videos = $this->db->fetchAll($sql, $params);
+        return $this->formatVideos($videos);
     }
     
     public function getCategoryById($id) {
