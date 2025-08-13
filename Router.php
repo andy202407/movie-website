@@ -162,27 +162,36 @@ class Router {
     }
     
     private function play() {
-        $id = $_GET['id'] ?? 0;
-        $video = $this->videoModel->getVideoById($id);
+        $videoId = $_GET['id'] ?? 0;
+        $video = $this->videoModel->getVideoById($videoId);
         
         if (!$video) {
             header('HTTP/1.0 404 Not Found');
-            $categories = $this->videoModel->getAllCategories();
             $this->templateEngine->assignArray([
                 'title' => '页面不存在 - 鱼鱼影院',
-                'categories' => $categories
+                'categories' => $this->videoModel->getAllCategories()
             ]);
             $this->templateEngine->display('404');
             return;
         }
         
-        $category = $this->videoModel->getCategoryById($video['category_id']);
+        // 获取视频的主要分类（用于面包屑导航等）
+        $mainCategory = null;
+        if (isset($video['category_ids']) && !empty($video['category_ids'])) {
+            // 使用第一个分类ID作为主要分类
+            $mainCategoryId = $video['category_ids'][0];
+            $mainCategory = $this->videoModel->getCategoryById($mainCategoryId);
+        } elseif (isset($video['category_id']) && !empty($video['category_id'])) {
+            // 兼容旧数据
+            $mainCategory = $this->videoModel->getCategoryById($video['category_id']);
+        }
+        
         $categories = $this->videoModel->getAllCategories();
         
         $this->templateEngine->assignArray([
             'title' => '免费在线看 ' . $video['title'] . ' - 动漫在线观看 - 鱼鱼影院',
             'video' => $video,
-            'category' => $category,
+            'category' => $mainCategory,
             'categories' => $categories,
             'current_page' => 'play'
         ]);
@@ -224,6 +233,11 @@ class Router {
         $perPage = 12; // 每页显示12个
         $sort = $_GET['sort'] ?? 'latest'; // 默认按最新排序
         
+        // 新增筛选参数
+        $filterYear = $_GET['year'] ?? '';
+        $filterRegion = $_GET['region'] ?? '';
+        $filterCategory = $_GET['filter_category'] ?? '';
+        
         $category = $this->videoModel->getCategoryById($categoryId);
         $categories = $this->videoModel->getAllCategories();
         
@@ -237,19 +251,48 @@ class Router {
             return;
         }
         
-        // 获取分类下的所有视频
+        // 获取分类下的所有视频（支持筛选）
         $allVideos = $this->videoModel->getVideosByCategory($categoryId);
+        
+        // 应用筛选条件
+        if (!empty($filterYear) || !empty($filterRegion) || !empty($filterCategory)) {
+            $allVideos = array_filter($allVideos, function($video) use ($filterYear, $filterRegion, $filterCategory) {
+                // 年份筛选
+                if (!empty($filterYear) && $video['year'] != $filterYear) {
+                    return false;
+                }
+                
+                // 地区筛选
+                if (!empty($filterRegion) && $video['region'] != $filterRegion) {
+                    return false;
+                }
+                
+                // 分类筛选（检查是否包含指定分类）
+                if (!empty($filterCategory)) {
+                    $filterCategoryId = intval($filterCategory);
+                    if (!isset($video['category_ids']) || !in_array($filterCategoryId, $video['category_ids'])) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+        }
         
         // 根据排序方式处理
         switch ($sort) {
             case 'rating':
                 usort($allVideos, function($a, $b) {
-                    return $b['rating'] <=> $a['rating'];
+                    $ratingA = floatval(str_replace(['暂无评分', '分钟'], '', $a['rating']));
+                    $ratingB = floatval(str_replace(['暂无评分', '分钟'], '', $b['rating']));
+                    return $ratingB <=> $ratingA;
                 });
                 break;
             case 'year':
                 usort($allVideos, function($a, $b) {
-                    return $b['year'] <=> $a['year'];
+                    $yearA = intval($a['year']);
+                    $yearB = intval($b['year']);
+                    return $yearB <=> $yearA;
                 });
                 break;
             case 'latest':
@@ -274,6 +317,40 @@ class Router {
             $categoryMap[$cat['id']] = $cat;
         }
         
+        // 获取可用的筛选选项
+        $availableYears = [];
+        $availableRegions = [];
+        $availableFilterCategories = [];
+        
+        // 从所有影片中提取可用的筛选选项（全局筛选）
+        $allVideos = $this->videoModel->getAllVideos();
+        foreach ($allVideos as $video) {
+            // 年份
+            if (!empty($video['year']) && $video['year'] != '未知') {
+                $availableYears[] = $video['year'];
+            }
+            
+            // 地区
+            if (!empty($video['region']) && $video['region'] != '未知地区') {
+                $availableRegions[] = $video['region'];
+            }
+        }
+        
+        // 分类筛选选项包含所有分类（全局筛选）
+        foreach ($categories as $cat) {
+            $availableFilterCategories[] = $cat['id'];
+        }
+        
+        // 去重并排序
+        $availableYears = array_unique($availableYears);
+        rsort($availableYears); // 年份降序
+        
+        $availableRegions = array_unique($availableRegions);
+        sort($availableRegions); // 地区按字母顺序
+        
+        $availableFilterCategories = array_unique($availableFilterCategories);
+        sort($availableFilterCategories);
+        
         $this->templateEngine->assignArray([
             'title' => $category['name'] . ' - 第' . $page . '页 - 鱼鱼影院',
             'category' => $category,
@@ -285,7 +362,14 @@ class Router {
             'totalPages' => $totalPages,
             'total' => $total,
             'sort' => $sort,
-            'current_page' => 'list'
+            'current_page' => 'list',
+            // 筛选相关
+            'filterYear' => $filterYear,
+            'filterRegion' => $filterRegion,
+            'filterCategory' => $filterCategory,
+            'availableYears' => $availableYears,
+            'availableRegions' => $availableRegions,
+            'availableFilterCategories' => $availableFilterCategories
         ]);
         
         $this->templateEngine->display('list');

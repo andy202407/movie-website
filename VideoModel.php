@@ -168,12 +168,32 @@ class VideoModel {
             // 数据库存储的是 /public/uploads/covers/xxx 格式
             // 需要转换为 /uploads/covers/xxx 供前端访问
             $poster = str_replace('/public/', '/', $video['cover_path']);
+            
+            // 如果路径仍然以/public开头，再次处理
+            if (strpos($poster, '/public/') === 0) {
+                $poster = str_replace('/public/', '/', $poster);
+            }
+            
+            // 确保路径以/开头
+            if (strpos($poster, '/') !== 0) {
+                $poster = '/' . $poster;
+            }
         }
         
         // 处理banner图片路径
         $banner = '';
         if (!empty($video['banner_path'])) {
             $banner = str_replace('/public/', '/', $video['banner_path']);
+            
+            // 如果路径仍然以/public开头，再次处理
+            if (strpos($banner, '/public/') === 0) {
+                $banner = str_replace('/public/', '/', $banner);
+            }
+            
+            // 确保路径以/开头
+            if (strpos($banner, '/') !== 0) {
+                $banner = '/' . $banner;
+            }
         }
         
         // 处理视频文件路径
