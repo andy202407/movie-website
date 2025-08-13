@@ -239,8 +239,9 @@ html, body {
 /* 让进度条和时间靠近，保持在一行 */
 .xgplayer .xgplayer-progress {
     flex: 1 !important; 
-    margin: 0 8px !important; 
+    margin: 0 4px !important; 
     max-width: none !important; 
+    min-width: 300px !important;
 }
 
 /* 让左右时间在进度条两端对齐 */
@@ -248,6 +249,8 @@ html, body {
     white-space: nowrap !important;
     opacity: 1 !important;
     visibility: visible !important;
+    font-size: 12px !important;
+    margin: 0 1px !important;
 }
 
 .xgplayer .xgplayer-volume {
@@ -370,54 +373,105 @@ html, body {
     opacity: 1 !important;
 }
 
-/* 强制显示时间控制元素 */
+/* 强制显示时间控制元素，让时间显示更紧凑 */
 .video-js .vjs-current-time,
 .video-js .vjs-duration,
 .video-js .vjs-time-divider {
     display: inline-block !important;
     visibility: visible !important;
     opacity: 1 !important;
-    margin: 0 2px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    letter-spacing: 0 !important;
 }
 
-/* 确保时间分隔符显示 */
+/* 确保时间分隔符显示，直接用/隔开，不要间隔 */
 .video-js .vjs-time-divider {
     color: #fff !important;
     font-weight: bold !important;
-    margin: 0 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    letter-spacing: 0 !important;
+    width: auto !important;
+    min-width: auto !important;
+}
+
+/* 强制时间控制容器紧凑排列 */
+.video-js .vjs-time-control {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0 !important;
 }
 
 /* 减少控制栏元素间距 */
 .video-js .vjs-control-bar {
-    padding: 0 8px !important;
+    padding: 0 !important;
 }
 
 .video-js .vjs-control-bar > div {
-    margin: 0 2px !important;
+    margin: 0 !important;
 }
 
 /* 减少播放按钮和音量控制之间的间距 */
 .video-js .vjs-play-control {
-    margin-right: 4px !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
 }
 
 .video-js .vjs-volume-panel {
-    margin-right: 4px !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
 }
 
 /* 减少时间显示和进度条之间的间距 */
 .video-js .vjs-duration {
-    margin-right: 6px !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
 }
 
 /* 减少进度条和右侧按钮的间距 */
 .video-js .vjs-progress-control {
-    margin: 0 4px !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* 减少右侧按钮之间的间距 */
 .video-js .vjs-picture-in-picture-control {
-    margin-right: 4px !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+}
+
+/* 减少所有控制按钮的间距 */
+.video-js .vjs-control {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 减少图标按钮的间距 */
+.video-js .vjs-button {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 强制所有控制元素紧密排列 */
+.video-js .vjs-control-bar > * {
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+}
+
+/* 特别处理音量控制面板 */
+.video-js .vjs-volume-panel .vjs-volume-control {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 特别处理时间控制 */
+.video-js .vjs-time-control {
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .video-js .vjs-big-play-button {
@@ -462,7 +516,8 @@ html, body {
                     <ul class="swiper-wrapper">
                         <li class="swiper-slide"><i class="ol1">提示</i>不要轻易相信视频中的广告，谨防上当受骗!</li>
 <li class="swiper-slide"><i class="ol3">提示</i>如果无法播放请重新刷新页面。</li>
-<li class="swiper-slide"><i class="ol7">提示</i>视频载入速度跟网速有关，请耐心等待几秒钟。</li>                    </ul>
+<li class="swiper-slide"><i class="ol7">提示</i>视频载入速度跟网速有关，请耐心等待几秒钟。</li>                    
+</ul>
                 </div>
                 <span class="player-news-off cor6 fa ds-guanbi"></span>
             </div>
@@ -596,6 +651,9 @@ html, body {
         try {
             console.log('开始创建Video.js播放器');
             
+            // 生成唯一的存储键名
+            const storageKey = `video_progress_${<?= $video['id'] ?>}`;
+            
             // 创建Video.js播放器
             const player = videojs('mse', {
                 controls: true,
@@ -623,8 +681,108 @@ html, body {
                 }]
             });
             
+            // 进度记忆功能
+            let progressSaveTimer = null;
+            
+            // 保存播放进度到本地存储
+            function saveProgress() {
+                if (player.currentTime() > 0 && player.duration() > 0) {
+                    const progress = {
+                        time: player.currentTime(),
+                        duration: player.duration(),
+                        percentage: (player.currentTime() / player.duration() * 100).toFixed(2),
+                        timestamp: Date.now(),
+                        videoId: <?= $video['id'] ?>,
+                        title: "<?= $this->escape($video['title']) ?>",
+                        poster: "<?= $this->escape($video['poster']) ?>"
+                    };
+                    
+                    try {
+                        localStorage.setItem(storageKey, JSON.stringify(progress));
+                        console.log('进度已保存:', progress);
+                    } catch (e) {
+                        console.warn('保存进度失败:', e);
+                    }
+                }
+            }
+            
+            // 从本地存储读取播放进度
+            function loadProgress() {
+                try {
+                    const saved = localStorage.getItem(storageKey);
+                    if (saved) {
+                        const progress = JSON.parse(saved);
+                        console.log('读取到保存的进度:', progress);
+                        
+                        // 如果进度超过90%，询问是否从头开始
+                        if (progress.percentage > 90) {
+                            if (confirm('检测到您上次观看进度为' + progress.percentage + '%，是否从头开始观看？')) {
+                                return false; // 从头开始
+                            }
+                        }
+                        
+                        return progress;
+                    }
+                } catch (e) {
+                    console.warn('读取进度失败:', e);
+                }
+                return false;
+            }
+            
+            // 显示进度提示
+            function showProgressTip(progress) {
+                const tip = document.createElement('div');
+                tip.style.cssText = `
+                    position: absolute;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    font-size: 14px;
+                    z-index: 1000;
+                    animation: fadeInOut 3s ease-in-out;
+                `;
+                tip.innerHTML = `检测到上次观看进度: ${progress.percentage}%`;
+                
+                // 添加动画样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes fadeInOut {
+                        0% { opacity: 0; transform: translateY(-20px); }
+                        20% { opacity: 1; transform: translateY(0); }
+                        80% { opacity: 1; transform: translateY(0); }
+                        100% { opacity: 0; transform: translateY(-20px); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                document.querySelector('.player-left').appendChild(tip);
+                
+                // 3秒后自动移除
+                setTimeout(() => {
+                    if (tip.parentNode) {
+                        tip.parentNode.removeChild(tip);
+                    }
+                }, 3000);
+            }
+            
             // 强制显示时间控制元素
             player.ready(function() {
+                console.log('播放器就绪');
+                
+                // 尝试恢复播放进度
+                const savedProgress = loadProgress();
+                if (savedProgress) {
+                    // 等待视频元数据加载完成
+                    player.one('loadedmetadata', function() {
+                        player.currentTime(savedProgress.time);
+                        showProgressTip(savedProgress);
+                        console.log('已恢复播放进度到:', savedProgress.time, '秒');
+                    });
+                }
+                
                 // 确保时间显示元素存在
                 const currentTime = player.controlBar.getChild('currentTimeDisplay');
                 const duration = player.controlBar.getChild('durationDisplay');
@@ -659,14 +817,45 @@ html, body {
                 console.log('视频加载完成');
             });
             
+            // 播放过程中定期保存进度（每5秒）
+            player.on('timeupdate', function() {
+                // 清除之前的定时器
+                if (progressSaveTimer) {
+                    clearTimeout(progressSaveTimer);
+                }
+                
+                // 设置新的定时器，5秒后保存进度
+                progressSaveTimer = setTimeout(() => {
+                    saveProgress();
+                }, 5000);
+            });
+            
             // 播放结束
             player.on('ended', function() {
                 console.log('播放结束');
+                saveProgress();
+                
+                // 播放完成后，可以选择删除进度记录或标记为已完成
+                try {
+                    const progress = JSON.parse(localStorage.getItem(storageKey) || '{}');
+                    progress.completed = true;
+                    progress.completedAt = Date.now();
+                    localStorage.setItem(storageKey, JSON.stringify(progress));
+                } catch (e) {
+                    console.warn('标记完成状态失败:', e);
+                }
             });
             
-            // 播放器就绪
-            player.ready(function() {
-                console.log('播放器就绪');
+            // 页面关闭前保存进度
+            window.addEventListener('beforeunload', function() {
+                saveProgress();
+            });
+            
+            // 页面隐藏时保存进度（移动端切换应用时）
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    saveProgress();
+                }
             });
             
         } catch (error) {

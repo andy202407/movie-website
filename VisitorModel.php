@@ -8,9 +8,23 @@ class VisitorModel {
     }
     
     /**
+     * 检查IP是否来自被排除的域名
+     */
+    private function isExcludedIP($ip) {
+        // 这里可以添加更多的IP过滤逻辑
+        // 比如检查IP是否属于特定的网络段
+        return false; // 默认不过滤IP
+    }
+    
+    /**
      * 记录网站访问
      */
     public function recordSiteVisit($ip) {
+        // 检查IP是否应该被排除
+        if ($this->isExcludedIP($ip)) {
+            return false;
+        }
+        
         $today = date('Y-m-d');
         
         // 检查今天是否已经记录过这个IP
@@ -30,6 +44,11 @@ class VisitorModel {
      * 记录影片访问
      */
     public function recordVideoVisit($ip, $videoId) {
+        // 检查IP是否应该被排除
+        if ($this->isExcludedIP($ip)) {
+            return false;
+        }
+        
         $today = date('Y-m-d');
         
         // 检查今天是否已经记录过这个IP访问这个影片
