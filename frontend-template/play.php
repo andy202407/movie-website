@@ -984,6 +984,58 @@ html, body {
     animation: pulse 2s infinite;
 }
 
+/* 禁用状态的剧集样式 */
+.anthology-list-play li.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(0,0,0,0.5);
+    border-color: rgba(255,255,255,0.1);
+}
+
+.anthology-list-play li.disabled:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.5);
+    transform: none;
+}
+
+.anthology-list-play li.disabled a {
+    cursor: not-allowed;
+    color: rgba(255,255,255,0.5);
+}
+
+.anthology-list-play li.disabled a em.play-on.disabled::before {
+    border-left: 6px solid rgba(255,255,255,0.3);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+}
+
+.anthology-list-play li.disabled a em.play-on.disabled::after {
+    background: rgba(255,255,255,0.3);
+    animation: none;
+}
+
+/* 禁用状态的提示 */
+.anthology-list-play li.disabled::after {
+    content: '暂无片源';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+    white-space: nowrap;
+    background: rgba(0,0,0,0.8);
+    padding: 2px 6px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.anthology-list-play li.disabled:hover::after {
+    opacity: 1;
+}
+
 @keyframes pulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
@@ -1222,10 +1274,24 @@ html, body {
                                                 <div>
                                                     <ul class="anthology-list-play size">
                                                         <?php foreach ($episodes as $episode): ?>
-                                                        <li class="box border <?= ($episode['episode_number'] == $currentEpisodeNumber) ? 'on ecnav-dt' : '' ?>" data-episode="<?= $episode['episode_number'] ?>">
-                                                            <a class="hide cor4" href="javascript:void(0)" onclick="switchEpisodeWithoutRefresh(<?= $episode['episode_number'] ?>)">
-                                                                <?php if ($episode['episode_number'] == $currentEpisodeNumber): ?>
+                                                        <?php 
+                                                        // 检查剧集是否有有效的播放链接
+                                                        $hasValidLink = !empty($episode['video_path']) && trim($episode['video_path']) !== '';
+                                                        $isCurrentEpisode = ($episode['episode_number'] == $currentEpisodeNumber);
+                                                        $liClass = 'box border';
+                                                        if ($isCurrentEpisode) {
+                                                            $liClass .= ' on ecnav-dt';
+                                                        }
+                                                        if (!$hasValidLink) {
+                                                            $liClass .= ' disabled';
+                                                        }
+                                                        ?>
+                                                        <li class="<?= $liClass ?>" data-episode="<?= $episode['episode_number'] ?>" data-has-link="<?= $hasValidLink ? '1' : '0' ?>">
+                                                            <a class="hide cor4" href="javascript:void(0)" <?= $hasValidLink ? 'onclick="switchEpisodeWithoutRefresh(' . $episode['episode_number'] . ')"' : 'onclick="showDisabledEpisodeTip()"' ?>>
+                                                                <?php if ($isCurrentEpisode && $hasValidLink): ?>
                                                                 <em class="play-on"><i></i><i></i><i></i><i></i></em>
+                                                                <?php elseif ($isCurrentEpisode && !$hasValidLink): ?>
+                                                                <em class="play-on disabled"><i></i><i></i><i></i><i></i></em>
                                                                 <?php else: ?>
                                                                 <span>第<?= str_pad($episode['episode_number'], 2, '0', STR_PAD_LEFT) ?>集</span>
                                                                 <?php endif; ?>
@@ -1319,6 +1385,13 @@ html, body {
     const videoUrl = "<?= $this->escape($playVideoUrl) ?>";
     const videoTitle = "<?= $this->escape($playVideoTitle) ?>";
     const videoPoster = "<?= $this->escape($playVideoPoster) ?>";
+    
+    // 检测是否为音频文件
+    function isAudioUrl(u) {
+        return /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac)(\?.*)?$/i.test(u)
+            || (u.includes('.m3u8') && /audio/i.test(u));
+    }
+    window.isAudioOnly = isAudioUrl(videoUrl);
     
     // 全局变量声明
     let player = null;
@@ -1454,28 +1527,6 @@ html, body {
                     window.playerReady = true;
                     playerReady = true;
                     
-                    // 检查是否有需要自动恢复的进度
-                    if (window.autoRestoreProgress) {
-                        player.one('loadedmetadata', function() {
-                            player.currentTime(window.autoRestoreProgress.time);
-                            // 不自动播放，只恢复进度
-                            // player.play();
-                            // 清除标记
-                            window.autoRestoreProgress = null;
-                        });
-                    } else {
-                        // 尝试恢复播放进度
-                        const savedProgress = loadProgress();
-                        if (savedProgress) {
-                            // 等待视频元数据加载完成
-                            player.one('loadedmetadata', function() {
-                                player.currentTime(savedProgress.time);
-                                // 不自动播放，只恢复进度
-                                // player.play();
-                            });
-                        }
-                    }
-                    
                     // 确保时间显示元素存在
                     const currentTime = player.controlBar.getChild('currentTimeDisplay');
                     const duration = player.controlBar.getChild('durationDisplay');
@@ -1484,6 +1535,42 @@ html, body {
                     if (currentTime) currentTime.show();
                     if (duration) duration.show();
                     if (timeDivider) timeDivider.show();
+                    
+                    // 统一的元数据加载处理函数
+                    const handleMetadataLoaded = function() {
+                        // 检测是否为纯音频
+                        const mediaEl = player.el().querySelector('video, audio');
+                        if (mediaEl && mediaEl.videoWidth === 0 && mediaEl.videoHeight === 0) {
+                            window.isAudioOnly = true;
+                        }
+                        if (window.isAudioOnly) {
+                            enableBackgroundAudioMode();
+                        }
+                        
+                        // 处理进度恢复
+                        if (window.autoRestoreProgress) {
+                            // 使用自动恢复标记
+                            player.currentTime(window.autoRestoreProgress.time);
+                            console.log('自动恢复进度:', window.autoRestoreProgress.time);
+                            window.autoRestoreProgress = null;
+                        } else {
+                            // 尝试从本地存储恢复进度
+                            const savedProgress = loadProgress();
+                            if (savedProgress && savedProgress.time > 0) {
+                                player.currentTime(savedProgress.time);
+                                console.log('本地恢复进度:', savedProgress.time);
+                                showProgressTip(savedProgress);
+                            }
+                        }
+                    };
+                    
+                    // 监听元数据加载完成事件
+                    player.one('loadedmetadata', handleMetadataLoaded);
+                    
+                    // 如果元数据已经加载完成，立即处理
+                    if (player.readyState() >= 1) {
+                        handleMetadataLoaded();
+                    }
                     
                 }, 500); // 延迟500ms确保播放器完全初始化
             });
@@ -1573,9 +1660,9 @@ html, body {
                         }
                     }
                     
-                    // iOS优化：页面隐藏时暂停播放器
-                    if (player && playerReady && !player.paused()) {
-                        player.pause();
+                    // iOS优化：页面隐藏时暂停播放器（音频文件不暂停）
+                    if (player && playerReady && !player.paused() && !window.isAudioOnly) {
+                        player.pause(); // 只有"非音频"才后台暂停；音频后台继续播
                     }
                 } else {
                     // 页面重新可见时，检查是否需要恢复播放
@@ -1652,6 +1739,11 @@ html, body {
     
 
     
+    // 显示禁用剧集提示
+    function showDisabledEpisodeTip() {
+        showTip('该剧集暂无片源，请选择其他剧集');
+    }
+
     // 显示提示信息
     function showTip(message) {
         const tip = document.createElement('div');
@@ -1763,7 +1855,8 @@ html, body {
                     // 等待播放器就绪后自动恢复进度
                     if (player && playerReady) {
                         player.currentTime(progress.time);
-                        player.play();
+                        // 不自动播放，只恢复进度，避免被浏览器阻止
+                        // player.play();
                     } else {
                         // 如果播放器还没就绪，设置一个标记
                         window.autoRestoreProgress = progress;
@@ -1795,14 +1888,21 @@ html, body {
                 // 有剧集时的处理逻辑
                 const episodeNumber = parseInt(item.getAttribute('data-episode'));
                 const isCurrentEpisode = episodeNumber === currentEpisode;
+                const hasValidLink = item.getAttribute('data-has-link') === '1';
                 
                 // 获取剧集项内的链接元素
                 const linkElement = item.querySelector('a');
                 if (linkElement) {
                     if (isCurrentEpisode) {
-                        // 当前剧集：显示播放按钮动画
-                        linkElement.innerHTML = '<em class="play-on"><i></i><i></i><i></i><i></i></em>';
-                        item.classList.add('on', 'ecnav-dt');
+                        if (hasValidLink) {
+                            // 当前剧集且有链接：显示播放按钮动画
+                            linkElement.innerHTML = '<em class="play-on"><i></i><i></i><i></i><i></i></em>';
+                            item.classList.add('on', 'ecnav-dt');
+                        } else {
+                            // 当前剧集但无链接：显示禁用状态的播放按钮
+                            linkElement.innerHTML = '<em class="play-on disabled"><i></i><i></i><i></i><i></i></em>';
+                            item.classList.add('on', 'ecnav-dt', 'disabled');
+                        }
                         
                         // 滚动到当前剧集位置
                         setTimeout(() => {
@@ -1815,6 +1915,11 @@ html, body {
                     } else {
                         // 其他剧集：显示剧集文字
                         linkElement.innerHTML = `<span>第${String(episodeNumber).padStart(2, '0')}集</span>`;
+                        
+                        // 如果没有链接，添加禁用状态
+                        if (!hasValidLink) {
+                            item.classList.add('disabled');
+                        }
                     }
                 }
             } else {
@@ -2032,7 +2137,7 @@ html, body {
                 return null;
             }
             
-            // 查找下一个有效的剧集
+            // 查找下一个有效的剧集（跳过无链接的剧集）
             for (let i = actualIndex + 1; i < sortedEpisodes.length; i++) {
                 const nextEpisode = sortedEpisodes[i];
                 
@@ -2047,7 +2152,7 @@ html, body {
                 return null;
             }
             
-            // 查找下一个有效的剧集
+            // 查找下一个有效的剧集（跳过无链接的剧集）
             for (let i = currentIndex + 1; i < sortedEpisodes.length; i++) {
                 const nextEpisode = sortedEpisodes[i];
                 
@@ -2286,7 +2391,7 @@ html, body {
             // 检查视频源是否有效
             if (!targetEpisode.video_path || targetEpisode.video_path.trim() === '') {
                 console.error('剧集视频源为空:', targetEpisode);
-                showTip('该剧集暂无视频源');
+                showTip('该剧集暂无视频源，无法播放');
                 return;
             }
             
@@ -2625,11 +2730,16 @@ html, body {
             // 6. 更新全局变量
             updateGlobalEpisodeState(episodeNumber);
             
-            // 7. 清理可能存在的错误状态
-            clearInvalidCache();
-        } catch (e) {
-            console.error('状态同步失败:', e);
+                    // 7. 清理可能存在的错误状态
+        clearInvalidCache();
+        
+        // 8. 如果是音频模式，更新锁屏信息
+        if (window.isAudioOnly) {
+            updateMediaSessionMetadata();
         }
+    } catch (e) {
+        console.error('状态同步失败:', e);
+    }
     }
     
     // 同步自动播放按钮状态
@@ -2712,6 +2822,58 @@ html, body {
         return null;
     }
     
+    // 启用后台/锁屏播放模式（Media Session）
+    function enableBackgroundAudioMode() {
+        // 让控制中心/锁屏显示标题封面并控制播放
+        if ('mediaSession' in navigator) {
+            updateMediaSessionMetadata();
+
+            const setPos = () => {
+                try {
+                    navigator.mediaSession.setPositionState({
+                        duration: player.duration() || 0,
+                        playbackRate: player.playbackRate ? player.playbackRate() : 1,
+                        position: player.currentTime() || 0
+                    });
+                } catch(e){}
+            };
+
+            navigator.mediaSession.setActionHandler('play',  () => player.play());
+            navigator.mediaSession.setActionHandler('pause', () => player.pause());
+            navigator.mediaSession.setActionHandler('seekbackward', () => player.currentTime(Math.max(0, player.currentTime() - 10)));
+            navigator.mediaSession.setActionHandler('seekforward',  () => player.currentTime(Math.min((player.duration()||0), player.currentTime() + 10)));
+            // 可选：上一集/下一集
+            try { 
+                navigator.mediaSession.setActionHandler('previoustrack', () => null); 
+            } catch(e){}
+            try { 
+                navigator.mediaSession.setActionHandler('nexttrack', () => autoPlayNextEpisode()); 
+            } catch(e){}
+
+            player.on('timeupdate', setPos);
+            player.on('ratechange', setPos);
+            player.on('loadedmetadata', () => { 
+                updateMediaSessionMetadata(); 
+                setPos(); 
+            });
+        }
+    }
+
+    // 切集时更新锁屏显示
+    function updateMediaSessionMetadata() {
+        if (!('mediaSession' in navigator)) return;
+        try {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: (document.querySelector('.player-title-link')?.textContent || videoTitle || '正在播放'),
+                artist: '星海影院',
+                album: '',
+                artwork: [
+                    { src: (videoPoster || '/template/yuyuyy/asset/img/logo-1.png'), sizes: '512x512', type: 'image/png' }
+                ]
+            });
+        } catch(e){}
+    }
+
     // 显示进度提示
     function showProgressTip(progress) {
         const tip = document.createElement('div');
