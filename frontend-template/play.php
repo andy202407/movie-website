@@ -1,3 +1,79 @@
+<?php
+// 引入数据库连接
+require_once '/www/wwwroot/m.ql52.com/Database.php';
+
+// 获取当前视频ID
+$videoId = $video['id'] ?? 0;
+
+// 获取当前剧集序号（默认为1）
+$currentEpisodeNumber = isset($_GET['episode']) ? intval($_GET['episode']) : 1;
+
+// 初始化变量
+$episodes = [];
+$currentEpisode = null;
+$hasEpisodes = false;
+$playVideoUrl = '';
+$playVideoTitle = '';
+$playVideoPoster = '';
+
+// 查询剧集信息
+if ($videoId > 0) {
+    try {
+        $db = Database::getInstance();
+        $episodes = $db->fetchAll("SELECT * FROM episodes WHERE video_id = ? ORDER BY episode_number ASC", [$videoId]);
+        
+        // 根据剧集序号查找对应剧集
+        if (!empty($episodes)) {
+            foreach ($episodes as $episode) {
+                if ($episode['episode_number'] == $currentEpisodeNumber) {
+                    $currentEpisode = $episode;
+                    break;
+                }
+            }
+            
+            // 如果没找到指定序号，默认使用第一集
+            if (!$currentEpisode) {
+                $currentEpisode = $episodes[0];
+                $currentEpisodeNumber = $currentEpisode['episode_number'];
+            }
+        }
+    } catch (Exception $e) {
+        error_log("查询剧集失败: " . $e->getMessage());
+        $episodes = [];
+    }
+}
+
+// 检查是否有剧集
+$hasEpisodes = !empty($episodes);
+
+// 确定要播放的视频URL
+if ($hasEpisodes && $currentEpisode) {
+    // 播放指定剧集
+    $playVideoUrl = $currentEpisode['video_path'];
+    $playVideoTitle = $currentEpisode['title'];
+    $playVideoPoster = $video['poster']; // 使用主视频的海报
+} else {
+    // 播放主视频
+    $playVideoUrl = $video['video_url'] ?? '';
+    $playVideoTitle = $video['title'] ?? '';
+    $playVideoPoster = $video['poster'] ?? '';
+}
+
+// 构建完整的视频URL
+if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
+    // 参考VideoModel.php中的路径处理逻辑
+    // 将/public/替换为/
+    $playVideoUrl = str_replace('/public/', '/', $playVideoUrl);
+    
+    // 确保路径以/开头
+    if (strpos($playVideoUrl, '/') !== 0) {
+        $playVideoUrl = '/' . $playVideoUrl;
+    }
+    
+    // 不添加域名，让nginx处理路径映射
+    // $playVideoUrl = 'https://m.ql52.com' . $playVideoUrl;
+}
+?>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -6,7 +82,7 @@
     <meta name="theme-color" content="#1a1a1a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>免费在线看 <?= $this->escape($video['title'] ?? '播放页面') ?> - 动漫在线观看 - 鱼鱼影院</title>
+    <title>免费在线看 <?= $this->escape($video['title']) ?><?= ($hasEpisodes && $currentEpisode) ? ' ' . $this->escape($currentEpisode['title']) : '' ?> - 动漫在线观看 - 鱼鱼影院</title>
 <meta name="keywords" content="<?= $this->escape($video['title'] ?? '') ?>,<?= $this->escape($video['title'] ?? '') ?>在线观看,动漫,鱼鱼影院,冒险,动画,奇幻,<?= $this->escape($video['title'] ?? '') ?>免费在线观看,<?= $this->escape($video['title'] ?? '') ?>免费看,<?= $this->escape($video['title'] ?? '') ?>在线免费播放,<?= $this->escape($video['title'] ?? '') ?>高清在线观看,<?= $this->escape($video['title'] ?? '') ?>无广告播放,<?= $this->escape($video['title'] ?? '') ?>手机在线看,<?= $this->escape($video['title'] ?? '') ?>分集在线观看,<?= $this->escape($video['title'] ?? '') ?>全集免费看" />
 <meta name="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 鱼鱼影院。<?= $this->escape($video['description'] ?? '') ?>。鱼鱼影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
 <meta itemProp="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 鱼鱼影院。<?= $this->escape($video['description'] ?? '') ?>。鱼鱼影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
@@ -159,7 +235,7 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    /* 移除overflow: hidden，允许页面滚动 */
 }
 
 /* 隐藏top-back组件 */
@@ -169,24 +245,38 @@ html, body {
 
 /* 播放器容器样式 */
 .player {
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    background: transparent;
+    /* 移除overflow: hidden，允许内容滚动 */
 }
 
 .player-box {
     flex: 1;
     display: flex;
-    height: calc(100vh - 60px);
-    overflow: hidden;
+    min-height: calc(100vh - 60px);
+    background: transparent;
+    /* 移除overflow: hidden，允许内容滚动 */
 }
 
 .player-left {
     flex: 1;
     position: relative;
-    background: #000;
-    overflow: hidden;
+    background: transparent;
+    /* 移除overflow: hidden，允许内容滚动 */
+    padding: 0;
+    margin: 0;
+    max-width: calc(100% - 400px); /* 限制左侧播放器宽度，为右侧留出空间 */
+}
+
+.player-right {
+    width: 400px;
+    min-width: 400px;
+    flex-shrink: 0;
+    background: #1a1a1a;
+    overflow-y: auto;
+    padding: 0 15px;
 }
 
 /* 播放器主体区域 */
@@ -197,6 +287,8 @@ html, body {
     padding: 0 !important;
     position: relative;
     overflow: hidden;
+    border-radius: 0;
+    background: transparent;
 }
 
 #mse {
@@ -280,25 +372,84 @@ html, body {
     visibility: hidden !important;
 }
 
+/* 中等屏幕响应式设计 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .player-left {
+        max-width: calc(100% - 360px);
+    }
+    
+    .player-right {
+        width: 360px;
+        min-width: 360px;
+        padding: 0 15px;
+    }
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .player-box {
         flex-direction: column;
-        height: calc(100vh - 50px);
+        min-height: calc(100vh - 50px);
     }
     
     .player-left {
-        height: 60vh;
+        min-height: 40vh;
+        flex: 1;
+        max-width: 100%; /* 移动端全宽显示 */
     }
     
     .player-right {
-        height: 40vh;
+        min-height: 50vh;
+        flex: 1;
+        width: 100%;
+        min-width: 100%;
+        overflow-y: auto;
+    }
+    
+    /* 确保移动端内容可以完整显示 */
+    .player {
+        min-height: 100vh;
+        height: auto;
+    }
+    
+    /* 移动端播放器容器 */
+    .MacPlayer {
+        min-height: 40vh;
+        height: auto;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* 移动端剧集列表 */
+    .anthology-list {
+        max-height: none;
+        overflow-y: visible;
+    }
+    
+    .anthology-list-play {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
     }
 }
 
 /* 确保所有内容都在可视区域内 */
 * {
     box-sizing: border-box;
+}
+
+/* 移动端底部安全区域 */
+@media (max-width: 768px) {
+    body {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+    
+    .player {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+    
+    .player-right {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
 }
 
 /* 确保播放器控制栏不被遮挡 */
@@ -310,19 +461,69 @@ html, body {
     z-index: 1000 !important;
 }
 
+/* 移除播放器容器的多余空间 */
+.player-left .MacPlayer {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+.player-left #mse {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+/* 确保播放器区域没有多余的黑色空间 */
+.player-left {
+    background: transparent !important;
+}
+
+.player-left .MacPlayer {
+    background: transparent !important;
+}
+
+.player-left #mse {
+    background: transparent !important;
+}
+
+.player-left #mse .video-js {
+    background: transparent !important;
+}
+
+/* 去除 player-news 的 position 属性 */
+.player-news {
+    position: static !important;
+}
+
+/* 去除 block-split 的 margin */
+.block-split {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.block-split.br {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 /* Video.js 播放器美化样式 */
 .video-js {
     width: 100% !important;
     height: 100% !important;
-    border-radius: 8px;
+    border-radius: 0;
     overflow: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 .video-js .vjs-control-bar {
     background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
     backdrop-filter: blur(10px);
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .video-js .vjs-progress-control {
@@ -504,6 +705,273 @@ html, body {
         font-size: 12px;
     }
 }
+
+/* 剧集列表样式 */
+.player-anthology {
+    margin-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px;
+}
+
+.anthology-header {
+    margin-bottom: 15px;
+}
+
+.anthology-header h5 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+}
+
+.anthology-header .function a {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+    color: #fff;
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 8px;
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: center;
+}
+
+.anthology-header .function a:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* 确保功能按钮容器有足够空间 */
+.anthology-header .function {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.anthology-header .title-m.cor4.flex.between {
+    width: 100%;
+    gap: 15px;
+}
+
+.anthology-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.anthology-list-play {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.anthology-list-play li {
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: rgba(0,0,0,0.3);
+    min-width: 90px;
+    max-width: 110px;
+}
+
+.anthology-list-play li:hover {
+    border-color: #4ecdc4;
+    background: rgba(78, 205, 196, 0.1);
+}
+
+.anthology-list-play li.on {
+    border-color: #4ecdc4;
+    background: rgba(78, 205, 196, 0.2);
+}
+
+.anthology-list-play li a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 6px;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.2;
+    min-height: 45px;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    text-align: center;
+}
+
+.anthology-list-play li a span {
+    display: block;
+    margin: 0;
+    font-weight: 500;
+    white-space: nowrap;
+    text-align: center;
+    width: 100%;
+    line-height: 1.2;
+}
+
+.anthology-list-play li a em.play-on {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin: 0 auto;
+    background: transparent;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.anthology-list-play li a em.play-on::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid #4ecdc4;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    margin: 0;
+}
+
+/* 当前播放的剧集使用不同的颜色 */
+.anthology-list-play li.on a em.play-on {
+    background: transparent;
+}
+
+.anthology-list-play li.on a em.play-on::before {
+    border-left: 6px solid #ff6b6b;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    margin: 0;
+}
+
+/* 添加播放状态指示器 */
+.anthology-list-play li.on a em.play-on::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 8px;
+    background: #fff;
+    border-radius: 2px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* 滚动条样式 */
+.anthology-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.anthology-list::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+}
+
+.anthology-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+.anthology-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
+}
+
+/* 响应式剧集列表 */
+@media (max-width: 768px) {
+    .anthology-list-play {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 6px;
+    }
+    
+    .anthology-list-play li {
+        min-width: 80px;
+        max-width: 95px;
+    }
+    
+    .anthology-list-play li a {
+        padding: 6px 4px;
+        font-size: 11px;
+        min-height: 40px;
+    }
+    
+    .anthology-list {
+        max-height: none;
+        overflow-y: visible;
+    }
+}
+
+@media (max-width: 480px) {
+    .anthology-list-play {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 5px;
+    }
+    
+    .anthology-list-play li {
+        min-width: 70px;
+        max-width: 85px;
+    }
+    
+    .anthology-list-play li a {
+        padding: 5px 3px;
+        font-size: 10px;
+        min-height: 35px;
+    }
+}
+
+/* 单列布局样式 */
+.anthology-list-play.single-column {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+}
+
+.anthology-list-play.single-column li {
+    border-radius: 6px;
+}
+
+.anthology-list-play.single-column li a {
+    padding: 12px 8px !important;
+    font-size: 14px !important;
+    text-align: left !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+}
+
+.anthology-list-play.single-column li a span {
+    display: inline-block !important;
+    margin-bottom: 0 !important;
+    margin-right: 10px !important;
+}
+
+.anthology-list-play.single-column li a em.play-on {
+    position: absolute !important;
+    right: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    float: none !important;
+    margin: 0 !important;
+}
 </style>
 <!-- Video.js CSS -->
 <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
@@ -611,6 +1079,68 @@ html, body {
                                 </div>
                                 <div style="display:none">无模块</div>
                                 
+                                <?php if ($hasEpisodes): ?>
+                                <!-- 剧集列表 -->
+                                <div class="player-anthology">
+                                    <div class="block-split br"></div>
+                                    <div class="anthology-header top10">
+                                        <div class="title-m cor4 flex between">
+                                            <h5>播放列表</h5>
+                                            <div class="function">
+                                                <a id="zxdaoxu" class="r6 cor5" href="javascript:" onclick="toggleEpisodeOrder()"><i class="fa r3">&#xe557;</i>排序</a>
+                                                <a class="player-button-ac cor5 r6" href="javascript:" onclick="toggleEpisodeLayout()"><i class="fa r3">&#xe553;</i>单列</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="anthology wow fadeInUp">
+                                        <div class="anthology-list top10 select-a">
+                                            <div class='anthology-list-box none dx'>
+                                                <div>
+                                                    <ul class="anthology-list-play size">
+                                                        <?php foreach ($episodes as $episode): ?>
+                                                        <li class="box border <?= ($episode['episode_number'] == $currentEpisodeNumber) ? 'on ecnav-dt' : '' ?>">
+                                                            <a class="hide cor4" href="javascript:void(0)" onclick="selectEpisode(<?= $episode['episode_number'] ?>)">
+                                                                <?php if ($episode['episode_number'] == $currentEpisodeNumber): ?>
+                                                                <em class="play-on"><i></i><i></i><i></i><i></i></em>
+                                                                <?php else: ?>
+                                                                <span>第<?= str_pad($episode['episode_number'], 2, '0', STR_PAD_LEFT) ?>集</span>
+                                                                <?php endif; ?>
+                                                            </a>
+                                                        </li>
+                                                        <?php endforeach; ?>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php else: ?>
+                                <!-- 无剧集时显示HD按钮 -->
+                                <div class="player-anthology">
+                                    <div class="block-split br"></div>
+                                    <div class="anthology-header top10">
+                                        <div class="title-m cor4 flex between">
+                                            <h5>播放列表</h5>
+                                        </div>
+                                    </div>
+                                    <div class="anthology wow fadeInUp">
+                                        <div class="anthology-list top10 select-a">
+                                            <div class='anthology-list-box none dx'>
+                                                <div>
+                                                    <ul class="anthology-list-play size">
+                                                        <li class="box border on ecnav-dt">
+                                                            <a class="hide cor4" href="javascript:void(0)">
+                                                                <em class="play-on"><i></i><i></i><i></i><i></i></em>
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
+                                
                             </div>
                             <div class="check"></div>
                                                         <div class="check">
@@ -628,13 +1158,62 @@ html, body {
 <!-- Video.js JavaScript -->
 <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 <script>
+    // 防止页面自动滚动
+    window.addEventListener('scroll', function(e) {
+        // 阻止任何程序化的滚动
+        if (e.isTrusted === false) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+    
+    // 禁用任何可能的自动滚动
+    document.addEventListener('DOMContentLoaded', function() {
+        // 防止其他脚本干扰滚动
+        const originalScrollTo = window.scrollTo;
+        const originalScrollBy = window.scrollBy;
+        
+        window.scrollTo = function(x, y) {
+            // 只允许用户手动滚动，阻止程序化滚动
+            if (arguments.length === 0 || (x === 0 && y === 0)) {
+                return;
+            }
+            return originalScrollTo.apply(this, arguments);
+        };
+        
+        window.scrollBy = function(x, y) {
+            // 阻止程序化滚动
+            return;
+        };
+        
+        // 移除可能的滚动事件监听器
+        $("html,body").off('scroll');
+        $(window).off('scroll');
+    });
+    
     // 检查视频URL是否存在
-    const videoUrl = "<?= $this->escape($video['video_url']) ?>";
-    console.log('Video URL:', videoUrl);
+    const videoUrl = "<?= $this->escape($playVideoUrl) ?>";
+    const videoTitle = "<?= $this->escape($playVideoTitle) ?>";
+    const videoPoster = "<?= $this->escape($playVideoPoster) ?>";
+    
+    // 全局变量声明
+    let player = null;
+    let playerReady = false;
+    let progressSaveTimer = null;
     
     // 等待页面完全加载
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('页面加载完成，开始初始化播放器');
+        // 额外等待一下确保所有元素都加载完成
+        setTimeout(initPlayer, 100);
+        
+        // 延迟检查缓存，避免与用户手动选择冲突
+        setTimeout(() => {
+            checkAndRestorePlayback();
+        }, 1000);
+    });
+    
+    // 播放器初始化函数
+    function initPlayer() {
         
         if (!videoUrl || videoUrl === '') {
             document.getElementById('mse').innerHTML = '<div style="text-align:center;padding:50px;color:#fff;font-size:16px;">视频链接失效，请联系管理员</div>';
@@ -648,18 +1227,24 @@ html, body {
             return;
         }
         
+        // 检查目标元素是否存在
+        const targetElement = document.getElementById('mse');
+        if (!targetElement) {
+            console.error('目标元素不存在');
+            return;
+        }
+        
         try {
-            console.log('开始创建Video.js播放器');
             
             // 生成唯一的存储键名
-            const storageKey = `video_progress_${<?= $video['id'] ?>}`;
+            const storageKey = `video_progress_${<?= $video['id'] ?>}_${<?= $currentEpisodeNumber ?? 1 ?>}`;
             
             // 创建Video.js播放器
-            const player = videojs('mse', {
+            player = videojs('mse', {
                 controls: true,
                 fluid: true,
                 responsive: true,
-                poster: "<?= $this->escape($video['poster']) ?>",
+                poster: videoPoster,
                 preload: 'metadata',
                 playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
                 controlBar: {
@@ -681,125 +1266,52 @@ html, body {
                 }]
             });
             
-            // 进度记忆功能
-            let progressSaveTimer = null;
             
-            // 保存播放进度到本地存储
-            function saveProgress() {
-                if (player.currentTime() > 0 && player.duration() > 0) {
-                    const progress = {
-                        time: player.currentTime(),
-                        duration: player.duration(),
-                        percentage: (player.currentTime() / player.duration() * 100).toFixed(2),
-                        timestamp: Date.now(),
-                        videoId: <?= $video['id'] ?>,
-                        title: "<?= $this->escape($video['title']) ?>",
-                        poster: "<?= $this->escape($video['poster']) ?>"
-                    };
-                    
-                    try {
-                        localStorage.setItem(storageKey, JSON.stringify(progress));
-                        console.log('进度已保存:', progress);
-                    } catch (e) {
-                        console.warn('保存进度失败:', e);
-                    }
-                }
-            }
-            
-            // 从本地存储读取播放进度
-            function loadProgress() {
-                try {
-                    const saved = localStorage.getItem(storageKey);
-                    if (saved) {
-                        const progress = JSON.parse(saved);
-                        console.log('读取到保存的进度:', progress);
-                        
-                        // 如果进度超过90%，询问是否从头开始
-                        if (progress.percentage > 90) {
-                            if (confirm('检测到您上次观看进度为' + progress.percentage + '%，是否从头开始观看？')) {
-                                return false; // 从头开始
-                            }
-                        }
-                        
-                        return progress;
-                    }
-                } catch (e) {
-                    console.warn('读取进度失败:', e);
-                }
-                return false;
-            }
-            
-            // 显示进度提示
-            function showProgressTip(progress) {
-                const tip = document.createElement('div');
-                tip.style.cssText = `
-                    position: absolute;
-                    top: 20px;
-                    right: 20px;
-                    background: rgba(0,0,0,0.8);
-                    color: white;
-                    padding: 10px 15px;
-                    border-radius: 5px;
-                    font-size: 14px;
-                    z-index: 1000;
-                    animation: fadeInOut 3s ease-in-out;
-                `;
-                tip.innerHTML = `检测到上次观看进度: ${progress.percentage}%`;
-                
-                // 添加动画样式
-                const style = document.createElement('style');
-                style.textContent = `
-                    @keyframes fadeInOut {
-                        0% { opacity: 0; transform: translateY(-20px); }
-                        20% { opacity: 1; transform: translateY(0); }
-                        80% { opacity: 1; transform: translateY(0); }
-                        100% { opacity: 0; transform: translateY(-20px); }
-                    }
-                `;
-                document.head.appendChild(style);
-                
-                document.querySelector('.player-left').appendChild(tip);
-                
-                // 3秒后自动移除
-                setTimeout(() => {
-                    if (tip.parentNode) {
-                        tip.parentNode.removeChild(tip);
-                    }
-                }, 3000);
-            }
-            
-            // 强制显示时间控制元素
+            // 播放器就绪处理
             player.ready(function() {
-                console.log('播放器就绪');
                 
-                // 尝试恢复播放进度
-                const savedProgress = loadProgress();
-                if (savedProgress) {
-                    // 等待视频元数据加载完成
-                    player.one('loadedmetadata', function() {
-                        player.currentTime(savedProgress.time);
-                        showProgressTip(savedProgress);
-                        console.log('已恢复播放进度到:', savedProgress.time, '秒');
-                    });
-                }
-                
-                // 确保时间显示元素存在
-                const currentTime = player.controlBar.getChild('currentTimeDisplay');
-                const duration = player.controlBar.getChild('durationDisplay');
-                const timeDivider = player.controlBar.getChild('timeDivider');
-                
-                if (currentTime) currentTime.show();
-                if (duration) duration.show();
-                if (timeDivider) timeDivider.show();
-                
-                console.log('时间控制元素状态:', {
-                    currentTime: !!currentTime,
-                    duration: !!duration,
-                    timeDivider: !!timeDivider
-                });
+                // 延迟设置状态，确保播放器完全初始化
+                setTimeout(() => {
+                    // 设置全局状态
+                    window.player = player;
+                    window.playerReady = true;
+                    playerReady = true;
+                    
+                    // 检查是否有需要自动恢复的进度
+                    if (window.autoRestoreProgress) {
+                        console.log('播放器就绪，自动恢复进度:', window.autoRestoreProgress);
+                        player.one('loadedmetadata', function() {
+                            player.currentTime(window.autoRestoreProgress.time);
+                            // 不自动播放，只恢复进度
+                            // player.play();
+                            // 清除标记
+                            window.autoRestoreProgress = null;
+                        });
+                    } else {
+                        // 尝试恢复播放进度
+                        const savedProgress = loadProgress();
+                        if (savedProgress) {
+                            // 等待视频元数据加载完成
+                            player.one('loadedmetadata', function() {
+                                player.currentTime(savedProgress.time);
+                                // 不自动播放，只恢复进度
+                                // player.play();
+                            });
+                        }
+                    }
+                    
+                    // 确保时间显示元素存在
+                    const currentTime = player.controlBar.getChild('currentTimeDisplay');
+                    const duration = player.controlBar.getChild('durationDisplay');
+                    const timeDivider = player.controlBar.getChild('timeDivider');
+                    
+                    if (currentTime) currentTime.show();
+                    if (duration) duration.show();
+                    if (timeDivider) timeDivider.show();
+                    
+                }, 500); // 延迟500ms确保播放器完全初始化
             });
             
-            console.log('播放器创建成功:', player);
             
             // 错误处理
             player.on('error', function(err) {
@@ -862,7 +1374,346 @@ html, body {
             console.error('创建播放器时出错:', error);
             document.getElementById('mse').innerHTML = '<div style="text-align:center;padding:50px;color:#fff;font-size:16px;">播放器初始化失败: ' + error.message + '</div>';
         }
-    });
+    }
+    
+
+    
+
+    
+    // 剧集排序切换（正序/倒序）
+    function toggleEpisodeOrder() {
+        const episodeList = document.querySelector('.anthology-list-play');
+        const episodes = Array.from(episodeList.children);
+        
+        // 切换排序
+        if (episodeList.dataset.order === 'desc') {
+            // 恢复正序
+            episodes.sort((a, b) => {
+                const aNum = parseInt(a.querySelector('span').textContent.match(/\d+/)[0]);
+                const bNum = parseInt(b.querySelector('span').textContent.match(/\d+/)[0]);
+                return aNum - bNum;
+            });
+            episodeList.dataset.order = 'asc';
+            document.getElementById('zxdaoxu').innerHTML = '<i class="fa r3">&#xe557;</i>排序';
+        } else {
+            // 倒序
+            episodes.sort((a, b) => {
+                const aNum = parseInt(a.querySelector('span').textContent.match(/\d+/)[0]);
+                const bNum = parseInt(b.querySelector('span').textContent.match(/\d+/)[0]);
+                return bNum - aNum;
+            });
+            episodeList.dataset.order = 'desc';
+            document.getElementById('zxdaoxu').innerHTML = '<i class="fa r3">&#xe557;</i>倒序';
+        }
+        
+        // 重新排列DOM元素
+        episodes.forEach(episode => episodeList.appendChild(episode));
+        
+        // 显示提示
+        showTip('剧集排序已切换');
+    }
+    
+    // 剧集布局切换（单列/多列）
+    function toggleEpisodeLayout() {
+        const episodeList = document.querySelector('.anthology-list-play');
+        const button = document.querySelector('.player-button-ac');
+        
+        if (episodeList.classList.contains('single-column')) {
+            // 切换到多列
+            episodeList.classList.remove('single-column');
+            button.innerHTML = '<i class="fa r3">&#xe553;</i>单列';
+            showTip('已切换到多列布局');
+        } else {
+            // 切换到单列
+            episodeList.classList.add('single-column');
+            button.innerHTML = '<i class="fa r3">&#xe553;</i>多列';
+            showTip('已切换到单列布局');
+        }
+    }
+    
+
+    
+    // 显示提示信息
+    function showTip(message) {
+        const tip = document.createElement('div');
+        tip.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 10000;
+            animation: tipFadeInOut 2s ease-in-out;
+        `;
+        tip.innerHTML = message;
+        
+        // 添加动画样式
+        if (!document.querySelector('#tip-style')) {
+            const style = document.createElement('style');
+            style.id = 'tip-style';
+            style.textContent = `
+                @keyframes tipFadeInOut {
+                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                    20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(tip);
+        
+        // 2秒后自动移除
+        setTimeout(() => {
+            if (tip.parentNode) {
+                tip.parentNode.removeChild(tip);
+            }
+        }, 2000);
+    }
+    
+    // 缓存管理函数
+    function saveToHistory() {
+        try {
+            const historyData = {
+                videoId: <?= $video['id'] ?>,
+                title: "<?= $this->escape($video['title']) ?>",
+                episode: <?= $currentEpisodeNumber ?? 1 ?>,
+                episodeTitle: "<?= $this->escape($currentEpisode['title'] ?? '') ?>",
+                poster: "<?= $this->escape($video['poster'] ?? '') ?>",
+                lastPlayed: Date.now(),
+                progress: loadProgress() || { time: 0, duration: 0 }
+            };
+            
+            let history = JSON.parse(localStorage.getItem('video_watch_history') || '[]');
+            
+            // 移除重复记录
+            history = history.filter(item => 
+                !(item.videoId == historyData.videoId && item.episode == historyData.episode)
+            );
+            
+            // 添加到开头
+            history.unshift(historyData);
+            
+            // 限制历史记录数量
+            if (history.length > 50) {
+                history = history.slice(0, 50);
+            }
+            
+            localStorage.setItem('video_watch_history', JSON.stringify(history));
+            
+            // 保存最后播放的视频信息
+            localStorage.setItem('last_video', JSON.stringify({
+                videoId: historyData.videoId,
+                episode: historyData.episode,
+                timestamp: Date.now()
+            }));
+            
+        } catch (e) {
+            console.warn('保存历史记录失败:', e);
+        }
+    }
+    
+    // 检查并恢复播放记录
+    function checkAndRestorePlayback() {
+        try {
+            const lastVideo = JSON.parse(localStorage.getItem('last_video') || '{}');
+            
+            // 调试信息
+            console.log('当前视频ID:', <?= $video['id'] ?>);
+            console.log('当前剧集:', <?= $currentEpisodeNumber ?? 1 ?>);
+            console.log('缓存的上次观看:', lastVideo);
+            
+            // 检查是否是同一个视频
+            if (lastVideo.videoId == <?= $video['id'] ?>) {
+                // 如果当前剧集和上次观看的剧集不同，且用户没有手动选择，则自动跳转
+                if (lastVideo.episode != <?= $currentEpisodeNumber ?? 1 ?>) {
+                    // 检查URL中是否有episode参数，如果有说明用户手动选择了剧集
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const hasEpisodeParam = urlParams.has('episode');
+                    
+                    if (!hasEpisodeParam) {
+                        console.log('用户未手动选择剧集，自动跳转到上次观看的剧集:', lastVideo.episode);
+                        // 自动跳转到上次观看的剧集
+                        window.location.href = `?page=play&id=<?= $video['id'] ?>&episode=${lastVideo.episode}`;
+                        return;
+                    } else {
+                        console.log('用户手动选择了剧集，不自动跳转');
+                    }
+                }
+                
+                // 如果是同一个剧集，自动恢复播放进度（不显示提示）
+                const progress = loadProgress();
+                if (progress && progress.time > 0) {
+                    console.log('自动恢复播放进度:', progress);
+                    // 等待播放器就绪后自动恢复进度
+                    if (player && playerReady) {
+                        player.currentTime(progress.time);
+                        player.play();
+                    } else {
+                        // 如果播放器还没就绪，设置一个标记
+                        window.autoRestoreProgress = progress;
+                    }
+                }
+            } else {
+                console.log('不是同一个视频，或没有缓存记录');
+            }
+        } catch (e) {
+            console.warn('检查播放记录失败:', e);
+        }
+    }
+    
+    // 选择剧集
+    function selectEpisode(episodeNumber) {
+        console.log('用户选择了剧集:', episodeNumber);
+        
+        // 立即更新缓存
+        updateCacheImmediately(episodeNumber);
+        
+        // 跳转到选择的剧集
+        window.location.href = `?page=play&id=<?= $video['id'] ?>&episode=${episodeNumber}`;
+    }
+    
+    // 立即更新缓存（用户点击剧集时调用）
+    function updateCacheImmediately(episodeNumber) {
+        try {
+            const historyData = {
+                videoId: <?= $video['id'] ?>,
+                title: "<?= $this->escape($video['title']) ?>",
+                episode: episodeNumber,
+                episodeTitle: "<?= $this->escape($currentEpisode['title'] ?? '') ?>",
+                poster: "<?= $this->escape($video['poster'] ?? '') ?>",
+                lastPlayed: Date.now(),
+                progress: { time: 0, duration: 0 }
+            };
+            
+            // 立即保存到历史记录
+            let history = JSON.parse(localStorage.getItem('video_watch_history') || '[]');
+            history = history.filter(item => 
+                !(item.videoId == historyData.videoId && item.episode == historyData.episode)
+            );
+            history.unshift(historyData);
+            
+            if (history.length > 50) {
+                history = history.slice(0, 50);
+            }
+            
+            localStorage.setItem('video_watch_history', JSON.stringify(history));
+            
+            // 立即更新最后播放的视频信息
+            localStorage.setItem('last_video', JSON.stringify({
+                videoId: historyData.videoId,
+                episode: historyData.episode,
+                timestamp: Date.now()
+            }));
+            
+            console.log('缓存已立即更新，当前剧集:', episodeNumber);
+        } catch (e) {
+            console.warn('立即更新缓存失败:', e);
+        }
+    }
+    
+    // 自动恢复播放进度（静默执行，不显示提示）
+    function autoRestoreProgress(progress) {
+        if (player && playerReady) {
+            console.log('静默恢复播放进度:', progress);
+            player.currentTime(progress.time);
+            // 不自动播放，只恢复进度
+            // player.play();
+        } else {
+            // 如果播放器还没就绪，设置标记
+            window.autoRestoreProgress = progress;
+        }
+    }
+    
+    // 保存播放进度
+    function saveProgress() {
+        if (!player || !playerReady) return;
+        
+        try {
+            const storageKey = `video_progress_${<?= $video['id'] ?>}_${<?= $currentEpisodeNumber ?? 1 ?>}`;
+            const progress = {
+                time: player.currentTime(),
+                duration: player.duration(),
+                timestamp: Date.now(),
+                videoId: <?= $video['id'] ?>
+            };
+            localStorage.setItem(storageKey, JSON.stringify(progress));
+            
+            // 同时保存到历史记录
+            saveToHistory();
+        } catch (e) {
+            console.warn('保存播放进度失败:', e);
+        }
+    }
+    
+    // 加载播放进度
+    function loadProgress() {
+        try {
+            const storageKey = `video_progress_${<?= $video['id'] ?>}_${<?= $currentEpisodeNumber ?? 1 ?>}`;
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                const progress = JSON.parse(saved);
+                // 检查进度是否有效（不超过视频总长度的90%）
+                if (progress.time && progress.duration && progress.time < progress.duration * 0.9) {
+                    return progress;
+                }
+            }
+        } catch (e) {
+            console.warn('加载播放进度失败:', e);
+        }
+        return null;
+    }
+    
+    // 显示进度提示
+    function showProgressTip(progress) {
+        const tip = document.createElement('div');
+        tip.style.cssText = `
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1000;
+            animation: fadeInOut 2s ease-in-out;
+        `;
+        
+        const minutes = Math.floor(progress.time / 60);
+        const seconds = Math.floor(progress.time % 60);
+        tip.innerHTML = `已恢复播放进度：${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // 添加动画样式
+        if (!document.querySelector('#progress-tip-style')) {
+            const style = document.createElement('style');
+            style.id = 'progress-tip-style';
+            style.textContent = `
+                @keyframes fadeInOut {
+                    0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                    20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                    100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.querySelector('.player-left').appendChild(tip);
+        
+        // 2秒后自动移除
+        setTimeout(() => {
+            if (tip.parentNode) {
+                tip.parentNode.removeChild(tip);
+            }
+        }, 2000);
+    }
 </script>
 <div class="none">
     <span class="ds-log-set" data-type="4" data-mid="1" data-id="<?= $video['id'] ?>" data-sid="1" data-nid="1"></span>

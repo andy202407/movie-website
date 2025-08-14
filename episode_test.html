@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>剧集功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .episode-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .episode-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .episode-item:hover {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        .episode-item.active {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        .episode-number {
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .episode-debug {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .video-player {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-radius: 4px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>剧集功能测试页面</h1>
+        
+        <h2>测试说明</h2>
+        <p>这个页面用于测试剧集切换功能，包括：</p>
+        <ul>
+            <li>剧集按钮显示效果</li>
+            <li>剧集切换逻辑</li>
+            <li>播放器状态管理</li>
+        </ul>
+        
+        <h2>剧集列表</h2>
+        <div class="episode-list">
+            <div class="episode-item active" onclick="playEpisode(1, '/public/uploads/episodes/20250813/episode_3_1755074252.mp4', '第01集')">
+                <div class="episode-number">第01集</div>
+                <div class="episode-debug">1集</div>
+            </div>
+            <div class="episode-item" onclick="playEpisode(2, '/public/uploads/episodes/20250813/episode_4_1755074253.mp4', '第02集')">
+                <div class="episode-number">第02集</div>
+                <div class="episode-debug">2集</div>
+            </div>
+            <div class="episode-item" onclick="playEpisode(3, '/public/uploads/episodes/20250813/episode_5_1755074254.mp4', '第03集')">
+                <div class="episode-number">第03集</div>
+                <div class="episode-debug">3集</div>
+            </div>
+        </div>
+        
+        <h2>视频播放器</h2>
+        <div class="video-player" id="videoPlayer">
+            点击剧集开始播放
+        </div>
+        
+        <h2>功能按钮</h2>
+        <button onclick="toggleEpisodeOrder()">排序切换</button>
+        <button onclick="toggleEpisodeLayout()">布局切换</button>
+        <button onclick="clearLog()">清空日志</button>
+        
+        <h2>操作日志</h2>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        let currentEpisode = 1;
+        let episodeOrder = 'asc';
+        let episodeLayout = 'grid';
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function playEpisode(episodeId, videoPath, episodeTitle) {
+            log(`=== 剧集切换开始 ===`);
+            log(`剧集ID: ${episodeId}`);
+            log(`原始视频路径: ${videoPath}`);
+            log(`剧集标题: ${episodeTitle}`);
+            
+            // 更新当前播放的剧集状态
+            document.querySelectorAll('.episode-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 找到对应的剧集项并标记为当前播放
+            const episodeItem = document.querySelector(`[onclick*="${episodeId}"]`);
+            if (episodeItem) {
+                episodeItem.classList.add('active');
+            }
+            
+            // 构建完整的视频URL
+            let fullVideoPath = videoPath;
+            if (!videoPath.startsWith('http')) {
+                fullVideoPath = 'https://m.ql52.com' + (videoPath.startsWith('/') ? videoPath : '/' + videoPath);
+            }
+            
+            log(`完整视频路径: ${fullVideoPath}`);
+            
+            // 更新播放器显示
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.innerHTML = `
+                <div style="text-align:center;">
+                    <h3>正在加载: ${episodeTitle}</h3>
+                    <p>视频路径: ${fullVideoPath}</p>
+                    <p>剧集ID: ${episodeId}</p>
+                </div>
+            `;
+            
+            // 模拟播放延迟
+            setTimeout(() => {
+                videoPlayer.innerHTML = `
+                    <div style="text-align:center;">
+                        <h3>正在播放: ${episodeTitle}</h3>
+                        <p>✅ 剧集加载成功</p>
+                        <p>当前剧集: ${episodeId}</p>
+                    </div>
+                `;
+                log(`剧集 ${episodeId} 播放成功`);
+            }, 1000);
+            
+            currentEpisode = episodeId;
+        }
+        
+        function toggleEpisodeOrder() {
+            const episodeList = document.querySelector('.episode-list');
+            const episodes = Array.from(episodeList.children);
+            
+            if (episodeOrder === 'desc') {
+                // 恢复正序
+                episodes.sort((a, b) => {
+                    const aNum = parseInt(a.querySelector('.episode-number').textContent.match(/\d+/)[0]);
+                    const bNum = parseInt(b.querySelector('.episode-number').textContent.match(/\d+/)[0]);
+                    return aNum - bNum;
+                });
+                episodeOrder = 'asc';
+                log('剧集排序已切换到正序');
+            } else {
+                // 倒序
+                episodes.sort((a, b) => {
+                    const aNum = parseInt(a.querySelector('.episode-number').textContent.match(/\d+/)[0]);
+                    const bNum = parseInt(b.querySelector('.episode-number').textContent.match(/\d+/)[0]);
+                    return bNum - aNum;
+                });
+                episodeOrder = 'desc';
+                log('剧集排序已切换到倒序');
+            }
+            
+            // 重新排列DOM元素
+            episodes.forEach(episode => episodeList.appendChild(episode));
+        }
+        
+        function toggleEpisodeLayout() {
+            const episodeList = document.querySelector('.episode-list');
+            
+            if (episodeLayout === 'single') {
+                // 切换到网格布局
+                episodeList.style.gridTemplateColumns = 'repeat(auto-fill, minmax(100px, 1fr))';
+                episodeLayout = 'grid';
+                log('已切换到网格布局');
+            } else {
+                // 切换到单列布局
+                episodeList.style.gridTemplateColumns = '1fr';
+                episodeLayout = 'single';
+                log('已切换到单列布局');
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            log('日志已清空');
+        }
+        
+        // 页面加载完成
+        log('页面加载完成，剧集功能测试就绪');
+    </script>
+</body>
+</html>
