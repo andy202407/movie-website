@@ -82,10 +82,10 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
     <meta name="theme-color" content="#1a1a1a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>免费在线看 <?= $this->escape($video['title']) ?><?= ($hasEpisodes && $currentEpisode) ? ' ' . $this->escape($currentEpisode['title']) : '' ?> - 动漫在线观看 - 鱼鱼影院</title>
-<meta name="keywords" content="<?= $this->escape($video['title'] ?? '') ?>,<?= $this->escape($video['title'] ?? '') ?>在线观看,动漫,鱼鱼影院,冒险,动画,奇幻,<?= $this->escape($video['title'] ?? '') ?>免费在线观看,<?= $this->escape($video['title'] ?? '') ?>免费看,<?= $this->escape($video['title'] ?? '') ?>在线免费播放,<?= $this->escape($video['title'] ?? '') ?>高清在线观看,<?= $this->escape($video['title'] ?? '') ?>无广告播放,<?= $this->escape($video['title'] ?? '') ?>手机在线看,<?= $this->escape($video['title'] ?? '') ?>分集在线观看,<?= $this->escape($video['title'] ?? '') ?>全集免费看" />
-<meta name="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 鱼鱼影院。<?= $this->escape($video['description'] ?? '') ?>。鱼鱼影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
-<meta itemProp="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 鱼鱼影院。<?= $this->escape($video['description'] ?? '') ?>。鱼鱼影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
+    <title>免费在线看 <?= $this->escape($video['title']) ?><?= ($hasEpisodes && $currentEpisode) ? ' ' . $this->escape($currentEpisode['title']) : '' ?> - 动漫在线观看 - 星海影院</title>
+<meta name="keywords" content="<?= $this->escape($video['title'] ?? '') ?>,<?= $this->escape($video['title'] ?? '') ?>在线观看,动漫,星海影院,冒险,动画,奇幻,<?= $this->escape($video['title'] ?? '') ?>免费在线观看,<?= $this->escape($video['title'] ?? '') ?>免费看,<?= $this->escape($video['title'] ?? '') ?>在线免费播放,<?= $this->escape($video['title'] ?? '') ?>高清在线观看,<?= $this->escape($video['title'] ?? '') ?>无广告播放,<?= $this->escape($video['title'] ?? '') ?>手机在线看,<?= $this->escape($video['title'] ?? '') ?>分集在线观看,<?= $this->escape($video['title'] ?? '') ?>全集免费看" />
+<meta name="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 星海影院。<?= $this->escape($video['description'] ?? '') ?>。星海影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
+<meta itemProp="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 星海影院。<?= $this->escape($video['description'] ?? '') ?>。星海影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
 <meta property="og:title" content="<?= $this->escape($video['title']) ?>"/>
 <meta property="og:description" content="<?= $this->escape($video['description']) ?>"/>
 <meta property="og:type" content="video.episode"/>
@@ -94,13 +94,13 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
 <meta property="og:video:tag" content="冒险"/>
 <meta property="og:video:tag" content="动画"/>
 <meta property="og:video:tag" content="奇幻"/>
-<meta property="og:site_name" content="鱼鱼影院"/>
+<meta property="og:site_name" content="星海影院"/>
 <meta property="og:url" content="https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html"/>
 <meta property="og:image" content="<?= $this->escape($video['poster']) ?>"/>
 <meta property="og:image:alt" content="<?= $this->escape($video['title']) ?>"/>
 <meta property="og:locale" content="zh_CN"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:site" content="鱼鱼影院"/>
+<meta name="twitter:site" content="星海影院"/>
 <meta property="twitter:title" content="<?= $this->escape($video['title']) ?>"/>
 <meta name="twitter:description" content="<?= $this->escape($video['description']) ?>"/>
 <meta property="twitter:image" content="<?= $this->escape($video['poster']) ?>"/>
@@ -112,7 +112,7 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
     "@graph": [
       {
         "@type": "VideoObject",
-            "name": "免费在线看 <?= $this->escape($video['title']) ?> - 动漫在线观看 - 鱼鱼影院",
+            "name": "免费在线看 <?= $this->escape($video['title']) ?> - 动漫在线观看 - 星海影院",
             "description": "<?= $this->escape($video['description']) ?>",
             "thumbnailUrl": [
               "<?= $this->escape($video['poster']) ?>"
@@ -158,7 +158,7 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
                 "name": "<?= $this->escape($video['actor'] ?? '未知演员') ?>"
               }
                           ],
-            "name": "免费在线看 <?= $this->escape($video['title']) ?> - 动漫在线观看 - 鱼鱼影院",
+            "name": "免费在线看 <?= $this->escape($video['title']) ?> - 动漫在线观看 - 星海影院",
             "@id": "https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
             "url": "https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
             "description": "<?= $this->escape($video['description']) ?>",
@@ -177,7 +177,7 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
                   "position": 1,
                   "item": {
                     "@id": "https://m.ql82.com /",
-                    "name": "鱼鱼影院",
+                    "name": "星海影院",
                     "image": "https://m.ql82.com /static/images/logo.png"
                   }
                 },
@@ -224,8 +224,8 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
 </head>
 <body class="theme2">
 <div class="gen-loading bj load-icon-on">
-    <img class="loading1 none" data-ii="on" src="/template/yuyuyy/asset/img/logo-1.png" alt="鱼鱼影院">
-    <img class="loading2 none" src="/template/yuyuyy/asset/img/logo-2.png" alt="鱼鱼影院">
+    <img class="loading1 none" data-ii="on" src="/template/yuyuyy/asset/img/logo-1.png" alt="星海影院">
+    <img class="loading2 none" src="/template/yuyuyy/asset/img/logo-2.png" alt="星海影院">
 </div>
 <?php include 'components/header.php'; ?>
 <style>.footer{display:none!important}@media (min-width:993px){.MacPlayer{padding:10px 0!important}}</style>
@@ -675,7 +675,13 @@ html, body {
     padding: 0 !important;
 }
 
-.video-js .vjs-big-play-button {
+  /* 隐藏电影海报图片 */
+  .video-js .vjs-poster,
+  .video-js .vjs-poster-display {
+    display: none !important;
+  }
+
+  .video-js .vjs-big-play-button {
     background: rgba(0,0,0,0.6);
     border: 2px solid #fff;
     border-radius: 50%;
@@ -684,7 +690,7 @@ html, body {
     line-height: 76px;
     font-size: 40px;
     transition: all 0.3s ease;
-}
+  }
 
 .video-js .vjs-big-play-button:hover {
     background: rgba(78, 205, 196, 0.8);
@@ -1042,7 +1048,7 @@ html, body {
                 <div class="title">
                     <div class="flex switch-button">
                         <a class="selected" href="javascript:" title="视频信息">视频</a>
-                        <a class="split Pg" href="javascript:" title="用户讨论"></a>
+                        <!-- <a class="split Pg" href="javascript:" title="用户讨论"></a> -->
                         <!-- <a class="player-comment" href="javascript:" title="用户讨论" data-login="1" data-verify="1">讨论</a> -->
                     </div>
                 </div>

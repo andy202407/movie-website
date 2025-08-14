@@ -43,7 +43,7 @@ foreach ($categories as $cat) {
 }
 
 $templateEngine->assignArray([
-    'title' => $category['name'] . ' - 第' . $page . '页 - 鱼鱼影院',
+    'title' => $category['name'] . ' - 第' . $page . '页 - 星河影院',
     'category' => $category,
     'categories' => $categories,
     'categoryMap' => $categoryMap,

@@ -4,9 +4,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no,viewport-fit=cover">
     <meta name="theme-color" content="#1a1a1a" />
-    <title><?= $this->escape($category['name']) ?> - 鱼鱼影院</title>
+    <title><?= $this->escape($category['name']) ?> - 星海影院</title>
     <meta name="keywords" content="<?= $this->escape($category['name']) ?>,免费观看,高清在线" />
-    <meta name="description" content="鱼鱼影院<?= $this->escape($category['name']) ?>频道，提供最新最全的<?= $this->escape($category['name']) ?>资源" />
+    <meta name="description" content="星海影院<?= $this->escape($category['name']) ?>频道，提供最新最全的<?= $this->escape($category['name']) ?>资源" />
     
     <link href="/template/yuyuyy/asset/css/common.css" rel="stylesheet" type="text/css" />
     <script src="/template/yuyuyy/asset/js/jquery.js"></script>
@@ -23,8 +23,8 @@
     <div class="left flex">
         <div class="logo">
             <a class="logo-brand" href="/">
-                <img class="logo1 none" src="/template/yuyuyy/asset/img/logo-1.png" alt="鱼鱼影院">
-                <img class="logo2 none" src="/template/yuyuyy/asset/img/logo-2.png" alt="鱼鱼影院">
+                <img class="logo1 none" src="/template/yuyuyy/asset/img/logo-1.png" alt="星海影院">
+                <img class="logo2 none" src="/template/yuyuyy/asset/img/logo-2.png" alt="星海影院">
             </a>
         </div>
         <div class="head-nav ft4 roll bold0 pc-show1 wap-show1">
@@ -122,7 +122,7 @@
             </div>
         </div>
         <div class="foot-bottom">
-            <p>&copy; 2024 鱼鱼影院. 基于原生PHP模板引擎构建</p>
+            <p>&copy; 2024 星海影院. 基于原生PHP模板引擎构建</p>
         </div>
     </div>
 </div>

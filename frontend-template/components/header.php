@@ -44,7 +44,7 @@ $parentCategories = $videoModel->getParentCategories();
 <!-- Logo显示 -->
 <!-- <div class="site-logo">
     <a href="/" style="color: inherit; text-decoration: none;">
-        鱼鱼影院
+        星海影院
     </a>
 </div> -->
 
@@ -52,8 +52,8 @@ $parentCategories = $videoModel->getParentCategories();
     <div class="left flex">
         <div class="logo">
             <a class="logo-brand" href="/">
-                <img class="logo1 none" src="/template/yuyuyy/asset/img/logo-1.png" alt="鱼鱼影院">
-                <img class="logo2 none" src="/template/yuyuyy/asset/img/logo-2.png" alt="鱼鱼影院">
+                <img class="logo1 none" src="/template/yuyuyy/asset/img/logo-1.png" alt="星海影院">
+                <img class="logo2 none" src="/template/yuyuyy/asset/img/logo-2.png" alt="星海影院">
             </a>
         </div>
         <div class="head-nav ft4 roll bold0 pc-show1 wap-show1">

@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#1a1a1a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title><?= $this->escape($title ?? '鱼鱼影院 - 免费在线观看高清电影电视剧综艺动漫') ?></title>
-    <meta name="keywords" content="鱼鱼影院,免费电影,在线观看,高清影视,最新电影,热播电视剧,免费追剧,影视大全,电影天堂,在线影院,综艺节目,动漫在线" />
-    <meta name="description" content="鱼鱼影院 - 专业的免费影视在线观看平台,提供最新电影、热播电视剧、精彩综艺、热门动漫等海量高清影视资源。" />
+    <title><?= $this->escape($title ?? '星海影院 - 免费在线观看高清电影电视剧综艺动漫') ?></title>
+    <meta name="keywords" content="星海影院,免费电影,在线观看,高清影视,最新电影,热播电视剧,免费追剧,影视大全,电影天堂,在线影院,综艺节目,动漫在线" />
+    <meta name="description" content="星海影院 - 专业的免费影视在线观看平台,提供最新电影、热播电视剧、精彩综艺、热门动漫等海量高清影视资源。" />
     
     <link href="/template/yuyuyy/asset/css/common.css" rel="stylesheet" type="text/css" />
     <script src="/template/yuyuyy/asset/js/jquery.js"></script>
@@ -20,8 +20,8 @@
 </head>
 <body class="theme2">
 <div class="gen-loading bj load-icon-on">
-    <img class="loading1 none" data-ii="on" src="/template/yuyuyy/asset/img/logo-1.png" alt="鱼鱼影院">
-    <img class="loading2 none" src="/template/yuyuyy/asset/img/logo-2.png" alt="鱼鱼影院">
+    <img class="loading1 none" data-ii="on" src="/template/yuyuyy/asset/img/logo-1.png" alt="星海影院">
+    <img class="loading2 none" src="/template/yuyuyy/asset/img/logo-2.png" alt="星海影院">
 </div>
 
 <!-- 头部导航 -->
