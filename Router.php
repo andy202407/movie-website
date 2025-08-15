@@ -19,7 +19,10 @@ class Router {
             'play' => 'play',
             'category' => 'category',
             'list' => 'list',
-            'search' => 'search'
+            'search' => 'search',
+            'user' => 'user',
+            'user/register' => 'user_register',
+            'user/login' => 'user_login'
         ];
     }
     
@@ -46,6 +49,21 @@ class Router {
         if ($path === 'search') {
             $this->search();
             return;
+        }
+        
+        // 特殊处理用户路径
+        if (strpos($path, 'user/') === 0) {
+            $userAction = substr($path, 5); // 移除 'user/' 前缀
+            if ($userAction === 'register') {
+                $this->user_register();
+                return;
+            } elseif ($userAction === 'login') {
+                $this->user_login();
+                return;
+            } elseif (empty($userAction)) {
+                $this->user();
+                return;
+            }
         }
         
         // 检查是否有查询参数路由（兼容旧版本）
@@ -99,6 +117,15 @@ class Router {
                 break;
             case 'search':
                 $this->search();
+                break;
+            case 'user':
+                $this->user();
+                break;
+            case 'user_register':
+                $this->user_register();
+                break;
+            case 'user_login':
+                $this->user_login();
                 break;
             default:
                 $this->home();
@@ -433,5 +460,35 @@ class Router {
         ]);
         
         $this->templateEngine->display('search');
+    }
+    
+    private function user() {
+        // 检查用户是否已登录
+        session_start();
+        if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] <= 0) {
+            header('Location: /user/login.php');
+            exit;
+        }
+        
+        // 直接显示用户中心页面
+        include 'frontend-template/user/index.php';
+        exit;
+    }
+    
+    private function user_register() {
+        // 直接包含注册页面
+        include 'frontend-template/user/register.php';
+        exit;
+    }
+    
+    private function user_login() {
+        // 直接包含登录页面
+        include 'frontend-template/user/login.php';
+        exit;
+    }
+    
+    // 添加escape方法，让模板可以安全输出
+    public function escape($string) {
+        return $this->templateEngine->escape($string);
     }
 }

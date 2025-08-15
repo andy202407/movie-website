@@ -50,8 +50,16 @@ try {
     $requestUri = $_SERVER['REQUEST_URI'];
     $path = parse_url($requestUri, PHP_URL_PATH);
     if (strpos($path, '/api/') === 0) {
-        require_once 'api.php';
-        exit;
+        // 处理用户API请求
+        if (strpos($path, '/api/user') === 0) {
+            require_once 'api/user.php';
+            exit;
+        }
+        // 其他API请求
+        if (file_exists('api.php')) {
+            require_once 'api.php';
+            exit;
+        }
     }
     
     // 初始化模板引擎

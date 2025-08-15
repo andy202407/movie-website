@@ -50,7 +50,7 @@ $hasEpisodes = !empty($episodes);
 if ($hasEpisodes && $currentEpisode) {
     // 播放指定剧集
     $playVideoUrl = $currentEpisode['video_path'];
-    $playVideoTitle = $currentEpisode['title'];
+    $playVideoTitle = $video['title'] ?? ''; // 使用主视频的标题，不是剧集标题
     $playVideoPoster = $video['poster']; // 使用主视频的海报
 } else {
     // 播放主视频
@@ -221,6 +221,460 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
 <link rel="shortcut icon" href="/template/yuyuyy/asset/img/favicon.png" type="image/x-icon" />
 <link rel="apple-touch-icon" href="/static/images/ios_fav.png">
 <link rel="icon" sizes="180x180" type="image/png" href="/template/yuyuyy/asset/img/favicon.png">
+
+<!-- Video.js CSS -->
+<link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+
+<!-- 专业音频播放器样式 -->
+<style>
+/* 音频播放器专用样式 */
+    .audio-player-container {
+        display: none;
+        width: 88%;
+        height: 85%;
+        background: #1e293b;
+        border-radius: 8px;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.8), 
+            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+            0 0 20px rgba(59, 130, 246, 0.3);
+        border: 2px solid rgba(59, 130, 246, 0.5);
+        padding: 25px;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+        margin: 0 auto;
+        margin-top: 15px;
+        font-family: 'Courier New', monospace;
+    }
+    
+    /* 统一四边边框发光效果 */
+    .audio-player-container::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: 
+            linear-gradient(90deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(59, 130, 246, 0.3) 100%),
+            radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.25) 0%, transparent 50%);
+        border-radius: 10px;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+.audio-player-container.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 机械战甲装饰元素 */
+.audio-player-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.15) 50%, transparent 100%),
+        radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.25) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* 网格纹理 */
+/* .audio-player-container .grid-overlay {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(59, 130, 246, 0.1) 3px, rgba(59, 130, 246, 0.1) 6px),
+        repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(59, 130, 246, 0.1) 3px, rgba(59, 130, 246, 0.1) 6px);
+    background-size: 25px 25px;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 1;
+} */
+
+/* 音频播放器内容 */
+.audio-player-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 100%;
+}
+
+/* 机械战甲风格的封面 */
+.audio-cover {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    position: relative;
+    border: 3px solid rgba(59, 130, 246, 0.6);
+    box-shadow: 
+        0 0 20px rgba(59, 130, 246, 0.4),
+        inset 0 0 20px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    z-index: 2;
+    animation: rotateCover 20s linear infinite;
+}
+
+@keyframes rotateCover {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+}
+
+.audio-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.audio-cover::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #3b82f6, #1e3a8a, #3b82f6);
+    border-radius: 50%;
+    z-index: -1;
+    animation: rotateHalo 3s linear infinite reverse;
+}
+
+.audio-cover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(59, 130, 246, 0.2), transparent);
+    border-radius: 50%;
+    z-index: 1;
+}
+
+@keyframes rotateHalo {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 音频信息 */
+.audio-info {
+    margin-bottom: 20px;
+    color: white;
+}
+
+.audio-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+    color: #ffffff;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 2;
+}
+
+.audio-title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+}
+
+.audio-artist {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 4px;
+}
+
+.audio-album {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+/* 音频控制栏 */
+.audio-controls {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+/* 机械战甲风格的进度条 */
+.audio-progress {
+    width: 100%;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 6px;
+    margin-bottom: 20px;
+    position: relative;
+    cursor: pointer;
+    overflow: visible;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 2;
+}
+
+.audio-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #1e3a8a, #3b82f6);
+    border-radius: 6px;
+    position: relative;
+    transition: width 0.1s ease;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.audio-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border-radius: 50%;
+    transform: translate(50%, -50%);
+    box-shadow: 
+        0 0 15px rgba(59, 130, 246, 0.8),
+        0 0 30px rgba(59, 130, 246, 0.4);
+    border: 3px solid #3b82f6;
+}
+
+/* 机械战甲风格的时间显示 */
+.audio-time {
+    display: flex;
+    justify-content: space-between;
+    color: #3b82f6;
+    font-size: 11px;
+    margin-bottom: 18px;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    z-index: 2;
+}
+
+/* 机械战甲风格的控制按钮 */
+.audio-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    z-index: 2;
+}
+
+.audio-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    border: 2px solid rgba(59, 130, 246, 0.5);
+    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.audio-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.audio-btn:hover::before {
+    left: 100%;
+}
+
+.audio-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.8),
+        0 0 20px rgba(59, 130, 246, 0.4);
+    border-color: rgba(59, 130, 246, 0.8);
+}
+
+.audio-btn.play-pause {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+    border-color: rgba(59, 130, 246, 0.8);
+    box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.8),
+        0 0 25px rgba(59, 130, 246, 0.6);
+    font-size: 18px;
+}
+
+.audio-btn.play-pause:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.9),
+        0 0 30px rgba(59, 130, 246, 0.8);
+}
+
+
+
+/* 机械战甲风格的音频可视化 */
+.audio-visualizer {
+    width: 100%;
+    height: 40px;
+    margin-top: 20px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    z-index: 2;
+}
+
+.audio-bar {
+    width: 4px;
+    background: linear-gradient(to top, #3b82f6, #1e3a8a);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+    animation: audioWave 1.5s ease-in-out infinite;
+}
+
+.audio-bar:nth-child(odd) {
+    animation-delay: 0.1s;
+}
+
+.audio-bar:nth-child(even) {
+    animation-delay: 0.3s;
+}
+
+@keyframes audioWave {
+    0%, 100% { height: 15px; }
+    50% { height: 40px; }
+}
+
+/* 机械战甲风格响应式设计 */
+@media (max-width: 768px) {
+    .audio-player-container {
+        padding: 15px;
+        border-radius: 8px;
+        border-width: 1px;
+    }
+    
+    .audio-cover {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 15px;
+        border-width: 2px;
+    }
+    
+    .audio-title {
+        font-size: 16px;
+    }
+    
+    .audio-artist {
+        font-size: 12px;
+    }
+    
+    .audio-buttons {
+        gap: 12px;
+    }
+    
+    .audio-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 12px;
+        border-width: 1px;
+    }
+    
+    .audio-btn.play-pause {
+        width: 50px;
+        height: 50px;
+        font-size: 16px;
+    }
+    
+    /* 移动端进度条优化 */
+    .audio-progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    
+    .audio-progress-bar::after {
+        width: 18px;
+        height: 18px;
+        border-width: 3px;
+    }
+}
+
+/* 音频播放器切换动画 */
+.audio-player-container {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.audio-player-container.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* 隐藏视频播放器当显示音频播放器时 */
+.video-player-hidden {
+    display: none !important;
+}
+
+/* 音频播放器加载状态 */
+.audio-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+}
+
+.audio-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
 </head>
 <body class="theme2">
 <div class="gen-loading bj load-icon-on">
@@ -313,27 +767,80 @@ html, body {
     object-fit: contain;
 }
 
-/* 确保播放器控制栏和进度条显示 */
-.xgplayer .xgplayer-controls {
+/* Video.js播放器控制按钮垂直居中 */
+.video-js .vjs-control-bar {
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
+    backdrop-filter: blur(10px);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    padding: 0;
+    margin: 0;
     display: flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-/* 控制时间和进度条同一行显示 */
-.xgplayer .xgplayer-progress,
-.xgplayer .xgplayer-time {
-    display: inline-flex !important;
     align-items: center !important;
-    vertical-align: middle !important;
+    justify-content: flex-start !important;
 }
 
-/* 让进度条和时间靠近，保持在一行 */
-.xgplayer .xgplayer-progress {
-    flex: 1 !important; 
-    margin: 0 4px !important; 
-    max-width: none !important; 
-    min-width: 300px !important;
+/* 为所有Video.js控制按钮添加垂直居中 */
+.video-js .vjs-play-control,
+.video-js .vjs-pause-control,
+.video-js .vjs-volume-panel,
+.video-js .vjs-playback-rate,
+.video-js .vjs-picture-in-picture-control,
+.video-js .vjs-fullscreen-control,
+.video-js .vjs-time-control,
+.video-js .vjs-progress-control,
+.video-js .vjs-button,
+.video-js .vjs-control {
+    align-self: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* 进度条垂直居中 */
+.video-js .vjs-progress-control {
+    height: 6px;
+    align-self: center !important;
+    margin: auto 0 !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.video-js .vjs-progress-holder {
+    height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.video-js .vjs-play-progress {
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+    border-radius: 3px;
+    height: 100% !important;
+}
+
+.video-js .vjs-load-progress {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+    height: 100% !important;
+}
+
+/* 修复Video.js进度条拖动点 */
+.video-js .vjs-progress-control .vjs-progress-holder .vjs-play-progress:before {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    z-index: 10;
 }
 
 /* 让左右时间在进度条两端对齐 */
@@ -358,11 +865,6 @@ html, body {
 }
 
 /* 隐藏播放器弹窗 */
-.xgplayer-error, 
-.xgplayer-error-refresh,
-.xgplayer-error-text,
-.xgplayer-tips,
-.xgplayer-loading,
 .msg-error,
 .msg-box-bj,
 .msg-box,
@@ -551,26 +1053,48 @@ html, body {
     border-bottom-right-radius: 0;
     padding: 0;
     margin: 0;
+    display: flex !important;
 }
 
 .video-js .vjs-progress-control {
     height: 6px;
+    align-self: center !important;
+    margin: auto 0 !important;
+    position: relative !important;
 }
 
 .video-js .vjs-progress-holder {
     height: 6px;
     background: rgba(255,255,255,0.2);
     border-radius: 3px;
+    position: relative !important;
 }
 
 .video-js .vjs-play-progress {
     background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
     border-radius: 3px;
+    height: 100% !important;
 }
 
 .video-js .vjs-load-progress {
     background: rgba(255,255,255,0.3);
     border-radius: 3px;
+    height: 100% !important;
+}
+
+/* 修复Video.js进度条拖动点 */
+.video-js .vjs-progress-control .vjs-progress-holder .vjs-play-progress:before {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    z-index: 10;
 }
 
 .video-js .vjs-play-toggle,
@@ -611,6 +1135,9 @@ html, body {
     margin: 0 !important;
     padding: 0 !important;
     letter-spacing: 0 !important;
+    line-height: 6px !important;
+    height: 6px !important;
+    vertical-align: middle !important;
 }
 
 /* 确保时间分隔符显示，直接用/隔开，不要间隔 */
@@ -631,6 +1158,9 @@ html, body {
     display: inline-flex !important;
     align-items: center !important;
     gap: 0 !important;
+    align-self: center !important;
+    line-height: 1 !important;
+    height: 6px !important;
 }
 
 /* 减少控制栏元素间距 */
@@ -646,11 +1176,13 @@ html, body {
 .video-js .vjs-play-control {
     margin-right: 0 !important;
     padding-right: 0 !important;
+    align-self: center !important;
 }
 
 .video-js .vjs-volume-panel {
     margin-right: 0 !important;
     padding-left: 0 !important;
+    align-self: center !important;
 }
 
 /* 减少时间显示和进度条之间的间距 */
@@ -669,12 +1201,14 @@ html, body {
 .video-js .vjs-picture-in-picture-control {
     margin-right: 0 !important;
     padding-left: 0 !important;
+    align-self: center !important;
 }
 
 /* 减少所有控制按钮的间距 */
 .video-js .vjs-control {
     margin: 0 !important;
     padding: 0 !important;
+    align-self: center !important;
 }
 
 /* 减少图标按钮的间距 */
@@ -984,6 +1518,58 @@ html, body {
     animation: pulse 2s infinite;
 }
 
+/* 禁用状态的剧集样式 */
+.anthology-list-play li.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(0,0,0,0.5);
+    border-color: rgba(255,255,255,0.1);
+}
+
+.anthology-list-play li.disabled:hover {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.5);
+    transform: none;
+}
+
+.anthology-list-play li.disabled a {
+    cursor: not-allowed;
+    color: rgba(255,255,255,0.5);
+}
+
+.anthology-list-play li.disabled a em.play-on.disabled::before {
+    border-left: 6px solid rgba(255,255,255,0.3);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+}
+
+.anthology-list-play li.disabled a em.play-on.disabled::after {
+    background: rgba(255,255,255,0.3);
+    animation: none;
+}
+
+/* 禁用状态的提示 */
+.anthology-list-play li.disabled::after {
+    content: '暂无片源';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+    white-space: nowrap;
+    background: rgba(0,0,0,0.8);
+    padding: 2px 6px;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.anthology-list-play li.disabled:hover::after {
+    opacity: 1;
+}
+
 @keyframes pulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
@@ -1094,29 +1680,98 @@ html, body {
     float: none !important;
     margin: 0 !important;
 }
+
+/* 虚拟列表占位层 */
+.anthology-list { position: relative; }
+.vlist-phantom { width: 1px; opacity: 0; }
+#episode-list.v-virtual { position: absolute; top: 0; left: 0; right: 0; }
 </style>
-<!-- Video.js CSS -->
-<link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
 <div class="player bj">
     <div class="player-box">
         <div class="player-left">
             <div class="player-switch fa">&#xe565;</div>
                         <div class="player-news">
-                <div class="news-list">
+                <!-- <div class="news-list">
                     <ul class="swiper-wrapper">
                         <li class="swiper-slide"><i class="ol1">提示</i>不要轻易相信视频中的广告，谨防上当受骗!</li>
 <li class="swiper-slide"><i class="ol3">提示</i>如果无法播放请重新刷新页面。</li>
 <li class="swiper-slide"><i class="ol7">提示</i>视频载入速度跟网速有关，请耐心等待几秒钟。</li>                    
 </ul>
-                </div>
-                <span class="player-news-off cor6 fa ds-guanbi"></span>
+                </div> -->
+                <!-- <span class="player-news-off cor6 fa ds-guanbi"></span> -->
             </div>
             <script>let announcementSwiper = new Swiper('.news-list', {direction: 'vertical', loop: true, autoplay: {delay: 2000, disableOnInteraction: false,}});$(".player-news-off").click(function(){$(".player-news").hide()});</script>
-                        <div class="MacPlayer" style="z-index:99999;width:100%;height:100%;margin:0px;padding:0px;">
+                        
+            <!-- 视频播放器 -->
+            <div class="MacPlayer video-player" style="z-index:99999;width:100%;height:100%;margin:0px;padding:0px;">
                 <video id="mse" class="video-js vjs-default-skin" controls preload="metadata" 
        playsinline webkit-playsinline width="100%" height="100%">
     <p class="vjs-no-js">您的浏览器不支持HTML5视频播放，请升级浏览器或启用JavaScript。</p>
 </video>
+            </div>
+            
+            <!-- 音频播放器 -->
+            <div class="audio-player-container" id="audioPlayer">
+                <div class="grid-overlay"></div>
+                <div class="audio-player-content">
+                    <div class="audio-cover">
+                        <img src="/template/yuyuyy/asset/img/logo-1.png" alt="音频封面" id="audioCover">
+                    </div>
+                    
+                    <div class="audio-info">
+                        <div class="audio-title" id="audioTitle"><?= $this->escape($video['title']) ?> 第<?= $currentEpisodeNumber ?? 1 ?>集</div>
+                        <!-- <div class="audio-artist" id="audioArtist">星海影院</div> -->
+                        <div class="audio-album" id="audioAlbum">音频播放</div>
+                    </div>
+                    
+                    <div class="audio-controls">
+                        <div class="audio-progress" id="audioProgress">
+                            <div class="audio-progress-bar" id="audioProgressBar"></div>
+                        </div>
+                        
+                        <div class="audio-time">
+                            <span id="audioCurrentTime">0:00</span>
+                            <span id="audioDuration">0:00</span>
+                        </div>
+                        
+                        <div class="audio-buttons">
+                            <button class="audio-btn" id="audioPrev" title="上一首">
+                            <i class="fa">&#xe591;</i>
+                            </button>
+                            <button class="audio-btn play-pause" id="audioPlayPause" title="播放/暂停">
+                                <i class="fa">&#xe593;</i>
+                            </button>
+                            <button class="audio-btn" id="audioNext" title="下一首">
+                                <i class="fa">&#xe590;</i>
+                            </button>
+                        </div>
+                        
+
+                    </div>
+                    
+                    <div class="audio-visualizer" id="audioVisualizer">
+                        <div class="audio-bar" style="height: 20px;"></div>
+                        <div class="audio-bar" style="height: 40px;"></div>
+                        <div class="audio-bar" style="height: 30px;"></div>
+                        <div class="audio-bar" style="height: 50px;"></div>
+                        <div class="audio-bar" style="height: 25px;"></div>
+                        <div class="audio-bar" style="height: 45px;"></div>
+                        <div class="audio-bar" style="height: 35px;"></div>
+                        <div class="audio-bar" style="height: 55px;"></div>
+                        <div class="audio-bar" style="height: 20px;"></div>
+                        <div class="audio-bar" style="height: 40px;"></div>
+                        <div class="audio-bar" style="height: 30px;"></div>
+                        <div class="audio-bar" style="height: 50px;"></div>
+                        <div class="audio-bar" style="height: 25px;"></div>
+                        <div class="audio-bar" style="height: 45px;"></div>
+                        <div class="audio-bar" style="height: 35px;"></div>
+                        <div class="audio-bar" style="height: 55px;"></div>
+                        <div class="audio-bar" style="height: 20px;"></div>
+                        <div class="audio-bar" style="height: 40px;"></div>
+                        <div class="audio-bar" style="height: 30px;"></div>
+                        <div class="audio-bar" style="height: 50px;"></div>
+                    </div>
+                </div>
             </div>
                     </div>
         <div class="player-right cor5 bj">
@@ -1162,18 +1817,18 @@ html, body {
                 </div>
             </div>
             <div class="player-vod-box">
-                <div class="title">
+                <!-- <div class="title">
                     <div class="flex switch-button">
                         <a class="selected" href="javascript:" title="视频信息">视频</a>
-                        <!-- <a class="split Pg" href="javascript:" title="用户讨论"></a> -->
-                        <!-- <a class="player-comment" href="javascript:" title="用户讨论" data-login="1" data-verify="1">讨论</a> -->
+                        <a class="split Pg" href="javascript:" title="用户讨论"></a>
+                        <a class="player-comment" href="javascript:" title="用户讨论" data-login="1" data-verify="1">讨论</a>
                     </div>
-                </div>
+                </div> -->
                 <div class="list-body">
                     <div class="plist-body">
                         <div class="switch-box top20">
                             <div class="check selected">
-                                <h2><a href="?page=list&category=<?= $video['category_ids'][0] ?? '' ?>" target="_blank" class="player-title-link"><?= $this->escape($video['title']) ?></a></h2>
+                                <h3><a href="?page=list&category=<?= $video['category_ids'][0] ?? '' ?>" target="_blank" class="player-title-link"><?= $this->escape($video['title']) ?></a></h3>
                                 <div class="player-details flex wrap">
                                     <i class="fa r3 co8">&#xe596;</i><em>观看</em><span class="division">·</span>
                                     <span title="<?= $this->escape($video['year']) ?>" ><?= $this->escape($video['year']) ?></span><span class="division">·</span>
@@ -1181,11 +1836,13 @@ html, body {
                                     <span><?= $this->escape($video['duration']) ?></span><span class="division">·</span>
                                                                         <a id="expand_details" href="https://movie.douban.com/subject_search?search_text=<?= urlencode($video['title']) ?>" target="_blank" class="b">详情<i class="fa">&#xe565;</i></a>
                                 </div>
-                                <!-- <div class="fun flex between box radius">
-                                    <a class="item collection cor5" data-type="2" data-mid="1" data-id="<?= $video['id'] ?>"><i class="fa r6">&#xe577;</i>收藏</a>
+                                <div class="fun flex between box radius">
+                                    <a class="item collection cor5" id="collectionBtn" data-type="2" data-mid="1" data-id="<?= $video['id'] ?>" onclick="toggleCollection(<?= $video['id'] ?>)">
+                                        <i class="fa r6" id="collectionIcon">&#xe577;</i><span id="collectionText">收藏</span>
+                                    </a>
                                     <a class="ec-report item cor5" data-url="编号【<?= $video['id'] ?>】名称【<?= $this->escape($video['title']) ?>】不能观看请检查修复" data-id="<?= $video['id'] ?>"><i class="fa r6">&#xe595;</i>报错</a>
                                     <a class="item player-share-button cor5"><i class="fa r6">&#xe569;</i>分享</a>
-                                </div> -->
+                                </div>
                                 <div class="player-share-box radius topfadeInUp none box">
                                     <div class="flex">
                                         <div class="share-qrcode">
@@ -1222,10 +1879,24 @@ html, body {
                                                 <div>
                                                     <ul class="anthology-list-play size">
                                                         <?php foreach ($episodes as $episode): ?>
-                                                        <li class="box border <?= ($episode['episode_number'] == $currentEpisodeNumber) ? 'on ecnav-dt' : '' ?>" data-episode="<?= $episode['episode_number'] ?>">
-                                                            <a class="hide cor4" href="javascript:void(0)" onclick="switchEpisodeWithoutRefresh(<?= $episode['episode_number'] ?>)">
-                                                                <?php if ($episode['episode_number'] == $currentEpisodeNumber): ?>
+                                                        <?php 
+                                                        // 检查剧集是否有有效的播放链接
+                                                        $hasValidLink = !empty($episode['video_path']) && trim($episode['video_path']) !== '';
+                                                        $isCurrentEpisode = ($episode['episode_number'] == $currentEpisodeNumber);
+                                                        $liClass = 'box border';
+                                                        if ($isCurrentEpisode) {
+                                                            $liClass .= ' on ecnav-dt';
+                                                        }
+                                                        if (!$hasValidLink) {
+                                                            $liClass .= ' disabled';
+                                                        }
+                                                        ?>
+                                                        <li class="<?= $liClass ?>" data-episode="<?= $episode['episode_number'] ?>" data-has-link="<?= $hasValidLink ? '1' : '0' ?>">
+                                                            <a class="hide cor4" href="javascript:void(0)" <?= $hasValidLink ? 'onclick="switchEpisodeWithoutRefresh(' . $episode['episode_number'] . ')"' : 'onclick="showDisabledEpisodeTip()"' ?>>
+                                                                <?php if ($isCurrentEpisode && $hasValidLink): ?>
                                                                 <em class="play-on"><i></i><i></i><i></i><i></i></em>
+                                                                <?php elseif ($isCurrentEpisode && !$hasValidLink): ?>
+                                                                <em class="play-on disabled"><i></i><i></i><i></i><i></i></em>
                                                                 <?php else: ?>
                                                                 <span>第<?= str_pad($episode['episode_number'], 2, '0', STR_PAD_LEFT) ?>集</span>
                                                                 <?php endif; ?>
@@ -1320,10 +1991,24 @@ html, body {
     const videoTitle = "<?= $this->escape($playVideoTitle) ?>";
     const videoPoster = "<?= $this->escape($playVideoPoster) ?>";
     
+    // 检测是否为音频文件
+    function isAudioUrl(u) {
+        return /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac)(\?.*)?$/i.test(u)
+            || (u.includes('.m3u8') && /audio/i.test(u));
+    }
+    window.isAudioOnly = isAudioUrl(videoUrl);
+    
     // 全局变量声明
     let player = null;
     let playerReady = false;
     let progressSaveTimer = null;
+    
+    // 音频播放器相关变量
+    let audioPlayer = null;
+    let audioPlayerReady = false;
+    let audioProgressTimer = null;
+    let audioVisualizerTimer = null;
+    let isAudioMode = false;
     
     // 等待页面完全加载
     document.addEventListener('DOMContentLoaded', function() {
@@ -1338,20 +2023,27 @@ html, body {
             checkAndRestorePlayback();
         }, 1000);
         
-                        // 延迟高亮当前剧集，确保DOM完全渲染
-                setTimeout(() => {
-                    highlightCurrentEpisode();
-                    smartScrollToCurrentEpisode();
-                }, 1500);
-                
-                // 延迟预热下一集，提高iOS自动播放成功率
-                setTimeout(() => {
-                    warmUpNextEpisode();
-                }, 2000);
+        // 延迟高亮当前剧集，确保DOM完全渲染
+        setTimeout(() => {
+            highlightCurrentEpisode();
+            // smartScrollToCurrentEpisode(); // 注释掉定位到剧集功能
+        }, 1500);
+        
+        // 延迟预热下一集，提高iOS自动播放成功率
+        setTimeout(() => {
+            warmUpNextEpisode();
+        }, 2000);
         
         // 初始化自动播放按钮状态
         setTimeout(() => {
             initAutoPlayButton();
+        }, 2000);
+        
+        // 初始化排序按钮状态
+        setTimeout(() => {
+            initSortButtonState();
+            // 确保剧集列表是正序
+            ensureEpisodeOrder();
         }, 2000);
         
         // 清理可能存在的错误缓存
@@ -1364,6 +2056,20 @@ html, body {
             const currentEpisode = <?= $currentEpisodeNumber ?? 1 ?>;
             updateGlobalEpisodeState(currentEpisode);
         }, 3000);
+        
+        // 页面卸载时清理音频播放器资源
+        window.addEventListener('beforeunload', function() {
+            if (audioProgressTimer) {
+                clearInterval(audioProgressTimer);
+            }
+            if (audioVisualizerTimer) {
+                clearInterval(audioVisualizerTimer);
+            }
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer.src = '';
+            }
+        });
     });
     
     // 检查URL参数，确保剧集信息正确
@@ -1390,15 +2096,21 @@ html, body {
     // 播放器初始化函数
     function initPlayer() {
         
-        if (!videoUrl || videoUrl === '') {
-            document.getElementById('mse').innerHTML = '<div style="text-align:center;padding:50px;color:#fff;font-size:16px;">视频链接失效，请联系管理员</div>';
+            if (!videoUrl || videoUrl === '') {
+        showPlayErrorTip('播放源错误', '视频链接失效或为空，请联系管理员');
+        return;
+    }
+        
+        // 检查是否为音频文件
+        if (window.isAudioOnly) {
+            initAudioPlayer();
             return;
         }
         
         // 检查Video.js是否加载
         if (typeof videojs === 'undefined') {
             console.error('Video.js 未加载');
-            document.getElementById('mse').innerHTML = '<div style="text-align:center;padding:50px;color:#fff;font-size:16px;">播放器加载失败，请刷新页面重试</div>';
+            showPlayErrorTip('播放器错误', 'Video.js播放器未加载，请刷新页面重试');
             return;
         }
         
@@ -1454,27 +2166,8 @@ html, body {
                     window.playerReady = true;
                     playerReady = true;
                     
-                    // 检查是否有需要自动恢复的进度
-                    if (window.autoRestoreProgress) {
-                        player.one('loadedmetadata', function() {
-                            player.currentTime(window.autoRestoreProgress.time);
-                            // 不自动播放，只恢复进度
-                            // player.play();
-                            // 清除标记
-                            window.autoRestoreProgress = null;
-                        });
-                    } else {
-                        // 尝试恢复播放进度
-                        const savedProgress = loadProgress();
-                        if (savedProgress) {
-                            // 等待视频元数据加载完成
-                            player.one('loadedmetadata', function() {
-                                player.currentTime(savedProgress.time);
-                                // 不自动播放，只恢复进度
-                                // player.play();
-                            });
-                        }
-                    }
+                    // 启动播放记录保存
+                    startHistorySaving();
                     
                     // 确保时间显示元素存在
                     const currentTime = player.controlBar.getChild('currentTimeDisplay');
@@ -1485,15 +2178,83 @@ html, body {
                     if (duration) duration.show();
                     if (timeDivider) timeDivider.show();
                     
+                    // 统一的元数据加载处理函数
+                    const handleMetadataLoaded = function() {
+                        // 检测是否为纯音频
+                        const mediaEl = player.el().querySelector('video, audio');
+                        if (mediaEl && mediaEl.videoWidth === 0 && mediaEl.videoHeight === 0) {
+                            window.isAudioOnly = true;
+                        }
+                        if (window.isAudioOnly) {
+                            enableBackgroundAudioMode();
+                        }
+                        
+                        // 处理进度恢复
+                        if (window.autoRestoreProgress) {
+                            // 使用自动恢复标记
+                            player.currentTime(window.autoRestoreProgress.time);
+                            console.log('自动恢复进度:', window.autoRestoreProgress.time);
+                            window.autoRestoreProgress = null;
+                        } else {
+                            // 尝试从本地存储恢复进度
+                            const savedProgress = loadProgress();
+                            if (savedProgress && savedProgress.time > 0) {
+                                player.currentTime(savedProgress.time);
+                                console.log('本地恢复进度:', savedProgress.time);
+                                showProgressTip(savedProgress);
+                            }
+                        }
+                    };
+                    
+                    // 监听元数据加载完成事件
+                    player.one('loadedmetadata', handleMetadataLoaded);
+                    
+                    // 如果元数据已经加载完成，立即处理
+                    if (player.readyState() >= 1) {
+                        handleMetadataLoaded();
+                    }
+                    
                 }, 500); // 延迟500ms确保播放器完全初始化
             });
             
             
-            // 错误处理
-            player.on('error', function(err) {
-                console.error('播放器错误:', err);
-                console.error('错误详情:', player.error());
-            });
+                    // 错误处理
+        player.on('error', function(err) {
+            console.error('播放器错误:', err);
+            console.error('错误详情:', player.error());
+            
+            // 获取具体错误信息
+            const error = player.error();
+            if (error) {
+                let errorMessage = '';
+                let errorTitle = '';
+                
+                switch (error.code) {
+                    case 1:
+                        errorTitle = '播放错误';
+                        errorMessage = '视频加载失败，可能是网络问题或文件不存在';
+                        break;
+                    case 2:
+                        errorTitle = '网络错误';
+                        errorMessage = '网络连接异常，请检查网络设置';
+                        break;
+                    case 3:
+                        errorTitle = '解码错误';
+                        errorMessage = '视频格式不支持或文件损坏';
+                        break;
+                    case 4:
+                        errorTitle = '源错误';
+                        errorMessage = '视频源无法访问，请检查播放源是否正确';
+                        break;
+                    default:
+                        errorTitle = '播放错误';
+                        errorMessage = '未知错误，请刷新页面重试';
+                }
+                
+                // 显示错误提示
+                showPlayErrorTip(errorTitle, errorMessage);
+            }
+        });
             
             // 加载中提示
             player.on('loadstart', function() {
@@ -1554,6 +2315,14 @@ html, body {
                     window.warmUpPlayer.parentNode.removeChild(window.warmUpPlayer);
                     window.warmUpPlayer = null;
                 }
+                
+                // 清理音频播放器定时器
+                if (audioProgressTimer) {
+                    clearInterval(audioProgressTimer);
+                }
+                if (audioVisualizerTimer) {
+                    clearInterval(audioVisualizerTimer);
+                }
             });
             
             // 页面隐藏时保存进度（移动端切换应用时）
@@ -1573,14 +2342,21 @@ html, body {
                         }
                     }
                     
-                    // iOS优化：页面隐藏时暂停播放器
-                    if (player && playerReady && !player.paused()) {
-                        player.pause();
+                    if (isAudioMode && audioPlayerReady) {
+                        // 音频模式：页面隐藏时不暂停，继续后台播放
+                        // 但可以暂停可视化动画以节省资源
+                        stopAudioVisualizer();
+                    } else if (player && playerReady && !player.paused() && !window.isAudioOnly) {
+                        // 视频模式：iOS优化，页面隐藏时暂停播放器（音频文件不暂停）
+                        player.pause(); // 只有"非音频"才后台暂停；音频后台继续播
                     }
                 } else {
                     // 页面重新可见时，检查是否需要恢复播放
-                    if (player && playerReady && player.paused()) {
-                        // 可选：显示恢复播放提示
+                    if (isAudioMode && audioPlayerReady && audioPlayer.paused) {
+                        // 音频模式：可以显示恢复播放提示
+                        showTip('点击播放按钮继续收听');
+                    } else if (player && playerReady && player.paused()) {
+                        // 视频模式：显示恢复播放提示
                         showTip('点击播放按钮继续观看');
                     }
                 }
@@ -1588,48 +2364,479 @@ html, body {
             
         } catch (error) {
             console.error('创建播放器时出错:', error);
-            document.getElementById('mse').innerHTML = '<div style="text-align:center;padding:50px;color:#fff;font-size:16px;">播放器初始化失败: ' + error.message + '</div>';
+            showPlayErrorTip('播放器初始化失败', '播放器创建失败: ' + error.message + '，请刷新页面重试');
         }
     }
     
-
+            // 音频播放器初始化函数
+        function initAudioPlayer() {
+            try {
+                // 切换到音频模式
+                isAudioMode = true;
+                
+                // 隐藏视频播放器，显示音频播放器
+                const videoPlayer = document.querySelector('.video-player');
+                const audioPlayerContainer = document.getElementById('audioPlayer');
+                
+                if (videoPlayer) {
+                    videoPlayer.classList.add('video-player-hidden');
+                }
+                
+                if (audioPlayerContainer) {
+                    audioPlayerContainer.classList.add('active');
+                }
+                
+                // 更新音频播放器信息
+                updateAudioPlayerInfo();
+                
+                // 创建HTML5音频元素
+                audioPlayer = new Audio();
+                audioPlayer.src = videoUrl;
+                audioPlayer.preload = 'metadata';
+                audioPlayer.volume = 1; // 设置默认音量为80%
+                
+                // 音频事件监听
+                audioPlayer.addEventListener('loadedmetadata', function() {
+                    audioPlayerReady = true;
+                    updateAudioDuration();
+                    startAudioProgressUpdate();
+                    startAudioVisualizer();
+                    
+                    // 恢复播放进度
+                    const savedProgress = loadProgress();
+                    if (savedProgress && savedProgress.time > 0) {
+                        audioPlayer.currentTime = savedProgress.time;
+                        updateAudioProgress(savedProgress.time, savedProgress.duration);
+                    }
+                });
+                
+                audioPlayer.addEventListener('play', function() {
+                    updatePlayPauseButton(true);
+                    startAudioVisualizer();
+                });
+                
+                audioPlayer.addEventListener('pause', function() {
+                    updatePlayPauseButton(false);
+                    stopAudioVisualizer();
+                });
+                
+                audioPlayer.addEventListener('ended', function() {
+                    updatePlayPauseButton(false);
+                    stopAudioVisualizer();
+                    saveProgress();
+                    autoPlayNextEpisode();
+                });
+                
+                audioPlayer.addEventListener('error', function(e) {
+                    console.error('音频播放错误:', e);
+                    
+                    // 获取具体错误信息
+                    let errorMessage = '音频加载失败，请检查文件或网络';
+                    let errorTitle = '音频播放错误';
+                    
+                    // 检查错误类型
+                    if (e.target.error) {
+                        switch (e.target.error.code) {
+                            case MediaError.MEDIA_ERR_ABORTED:
+                                errorMessage = '音频播放被中断';
+                                break;
+                            case MediaError.MEDIA_ERR_NETWORK:
+                                errorMessage = '网络错误，音频无法加载';
+                                break;
+                            case MediaError.MEDIA_ERR_DECODE:
+                                errorMessage = '音频格式不支持或文件损坏';
+                                break;
+                            case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                                errorMessage = '音频源无法访问，可能是404错误';
+                                break;
+                            default:
+                                errorMessage = '音频播放失败，请检查文件或网络';
+                        }
+                    }
+                    
+                    // 显示错误提示
+                    showPlayErrorTip(errorTitle, errorMessage);
+                });
+                
+                // 绑定控制按钮事件
+                bindAudioControls();
+                
+                // 启用后台播放模式
+                enableBackgroundAudioMode();
+                
+                // 启动播放记录保存
+                startHistorySaving();
+                
+                console.log('音频播放器初始化完成');
+                
+            } catch (error) {
+                console.error('音频播放器初始化失败:', error);
+                showPlayErrorTip('初始化错误', '音频播放器初始化失败');
+            }
+        }
     
+    // 更新音频播放器信息
+    function updateAudioPlayerInfo(episodeNumber) {
+        const audioTitle = document.getElementById('audioTitle');
+        const audioArtist = document.getElementById('audioArtist');
+        const audioAlbum = document.getElementById('audioAlbum');
+        const audioCover = document.getElementById('audioCover');
+        
+        if (audioTitle) {
+            // 获取当前剧集号，如果没有传入参数则使用默认值
+            const currentEpisode = episodeNumber || <?= $currentEpisodeNumber ?? 1 ?>;
+            // 显示格式：视频标题 第X集
+            const titleText = (videoTitle || '未知音频') + ' 第' + currentEpisode + '集';
+            audioTitle.textContent = titleText;
+        }
+        
+        if (audioArtist) {
+            audioArtist.textContent = '星海影院';
+        }
+        
+        if (audioAlbum) {
+            audioAlbum.textContent = '音频播放';
+        }
+        
+        if (audioCover && videoPoster) {
+            audioCover.src = videoPoster;
+        }
+    }
+    
+    // 绑定音频控制按钮事件
+    function bindAudioControls() {
+        const playPauseBtn = document.getElementById('audioPlayPause');
+        const prevBtn = document.getElementById('audioPrev');
+        const nextBtn = document.getElementById('audioNext');
+        const progressBar = document.getElementById('audioProgress');
 
+        
+        // 播放/暂停按钮
+        if (playPauseBtn) {
+            playPauseBtn.addEventListener('click', function() {
+                if (audioPlayerReady) {
+                    if (audioPlayer.paused) {
+                        audioPlayer.play().catch(e => {
+                            console.error('播放失败:', e);
+                            showTip('播放失败，请点击播放按钮重试');
+                        });
+                    } else {
+                        audioPlayer.pause();
+                    }
+                }
+            });
+        }
+        
+        // 上一首按钮
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                // 这里可以实现上一首逻辑，暂时显示提示
+                showTip('上一首功能开发中');
+            });
+        }
+        
+        // 下一首按钮
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                // 这里可以实现下一首逻辑，暂时显示提示
+                showTip('下一首功能开发中');
+            });
+        }
+        
+        // 进度条点击
+        if (progressBar) {
+            progressBar.addEventListener('click', function(e) {
+                if (audioPlayerReady && audioPlayer.duration) {
+                    const rect = progressBar.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const clickPercent = clickX / rect.width;
+                    const newTime = clickPercent * audioPlayer.duration;
+                    audioPlayer.currentTime = newTime;
+                    updateAudioProgress(newTime, audioPlayer.duration);
+                }
+            });
+        }
+        
+
+    }
+    
+    // 更新播放/暂停按钮状态
+    function updatePlayPauseButton(isPlaying) {
+        const playPauseBtn = document.getElementById('audioPlayPause');
+        if (playPauseBtn) {
+            if (isPlaying) {
+                playPauseBtn.innerHTML = '<i class="fa">&#xe592;</i>';
+                playPauseBtn.title = '暂停';
+            } else {
+                playPauseBtn.innerHTML = '<i class="fa">&#xe593;</i>';
+                playPauseBtn.title = '播放';
+            }
+        }
+    }
+    
+    // 更新音频时长显示
+    function updateAudioDuration() {
+        const durationSpan = document.getElementById('audioDuration');
+        if (durationSpan && audioPlayer.duration) {
+            durationSpan.textContent = formatTime(audioPlayer.duration);
+        }
+    }
+    
+    // 开始音频进度更新
+    function startAudioProgressUpdate() {
+        if (audioProgressTimer) {
+            clearInterval(audioProgressTimer);
+        }
+        
+        audioProgressTimer = setInterval(() => {
+            if (audioPlayerReady && !audioPlayer.paused) {
+                updateAudioProgress(audioPlayer.currentTime, audioPlayer.duration);
+                
+                // 保存进度
+                saveProgress();
+            }
+        }, 1000);
+    }
+    
+    // 更新音频进度显示
+    function updateAudioProgress(currentTime, duration) {
+        const progressBar = document.getElementById('audioProgressBar');
+        const currentTimeSpan = document.getElementById('audioCurrentTime');
+        
+        if (progressBar && duration > 0) {
+            const progressPercent = (currentTime / duration) * 100;
+            progressBar.style.width = progressPercent + '%';
+        }
+        
+        if (currentTimeSpan) {
+            currentTimeSpan.textContent = formatTime(currentTime);
+        }
+    }
+    
+    // 开始音频可视化
+    function startAudioVisualizer() {
+        if (audioVisualizerTimer) {
+            clearInterval(audioVisualizerTimer);
+        }
+        
+        audioVisualizerTimer = setInterval(() => {
+            if (audioPlayerReady && !audioPlayer.paused) {
+                animateAudioVisualizer();
+            }
+        }, 100);
+    }
+    
+    // 停止音频可视化
+    function stopAudioVisualizer() {
+        if (audioVisualizerTimer) {
+            clearInterval(audioVisualizerTimer);
+            audioVisualizerTimer = null;
+        }
+        
+        // 重置可视化条
+        const bars = document.querySelectorAll('.audio-bar');
+        bars.forEach(bar => {
+            bar.style.height = '20px';
+        });
+    }
+    
+    // 动画音频可视化
+    function animateAudioVisualizer() {
+        const bars = document.querySelectorAll('.audio-bar');
+        bars.forEach((bar, index) => {
+            // 根据播放状态生成随机高度
+            const baseHeight = 20;
+            const maxHeight = 60;
+            const randomHeight = baseHeight + Math.random() * (maxHeight - baseHeight);
+            
+            // 添加一些随机性，让动画更自然
+            const delay = index * 0.1;
+            setTimeout(() => {
+                bar.style.height = randomHeight + 'px';
+            }, delay);
+        });
+    }
+    
+    // 格式化时间显示
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
     
     // 剧集排序切换（正序/倒序）
     function toggleEpisodeOrder() {
         const episodeList = document.querySelector('.anthology-list-play');
-        const episodes = Array.from(episodeList.children);
-        
-        // 切换排序
-        if (episodeList.dataset.order === 'desc') {
-            // 恢复正序
-            episodes.sort((a, b) => {
-                const aNum = parseInt(a.getAttribute('data-episode'));
-                const bNum = parseInt(b.getAttribute('data-episode'));
-                return aNum - bNum;
-            });
-            episodeList.dataset.order = 'asc';
-            document.getElementById('zxdaoxu').innerHTML = '<i class="fa r3">&#xe557;</i>排序';
-        } else {
-            // 倒序
-            episodes.sort((a, b) => {
-                const aNum = parseInt(a.getAttribute('data-episode'));
-                const bNum = parseInt(b.getAttribute('data-episode'));
-                return bNum - aNum;
-            });
-            episodeList.dataset.order = 'desc';
-            document.getElementById('zxdaoxu').innerHTML = '<i class="fa r3">&#xe557;</i>倒序';
+        if (!episodeList) {
+            console.error('剧集列表元素未找到');
+            showTip('剧集列表加载失败');
+            return;
         }
         
-        // 重新排列DOM元素
+        const episodes = Array.from(episodeList.children);
+        if (episodes.length === 0) {
+            console.error('没有找到剧集元素');
+            showTip('没有找到剧集');
+            return;
+        }
+        
+        const button = document.getElementById('zxdaoxu');
+        if (!button) {
+            console.error('排序按钮未找到');
+            showTip('排序按钮加载失败');
+            return;
+        }
+        
+        // 检查当前排序状态（优先使用localStorage，其次使用CSS类）
+        let isReversed = false;
+        
+        // 尝试从localStorage获取排序状态
+        try {
+            const sortState = localStorage.getItem(`episode_sort_${<?= $video['id'] ?>}`);
+            if (sortState) {
+                isReversed = JSON.parse(sortState);
+            } else {
+                // 如果localStorage没有记录，默认为正序（false）
+                isReversed = false;
+                // 立即保存默认状态到localStorage
+                try {
+                    localStorage.setItem(`episode_sort_${<?= $video['id'] ?>}`, 'false');
+                } catch (e2) {
+                    console.warn('保存默认状态失败:', e2);
+                }
+            }
+        } catch (e) {
+            // 如果localStorage读取失败，默认为正序
+            isReversed = false;
+            console.warn('localStorage读取失败，使用默认正序状态');
+        }
+        
+        if (isReversed) {
+            // 当前是倒序，切换到正序
+            // 按剧集号正序排列
+            episodes.sort((a, b) => {
+                const aNum = parseInt(a.getAttribute('data-episode')) || 0;
+                const bNum = parseInt(b.getAttribute('data-episode')) || 0;
+                return aNum - bNum;
+            });
+            
+            episodeList.classList.remove('reversed');
+            button.innerHTML = '<i class="fa r3">&#xe557;</i>倒序';
+            showTip('已切换到正序排列');
+            
+            // 保存状态到localStorage
+            try {
+                localStorage.setItem(`episode_sort_${<?= $video['id'] ?>}`, 'false');
+            } catch (e) {
+                console.warn('保存排序状态失败:', e);
+            }
+        } else {
+            // 当前是正序，切换到倒序
+            // 按剧集号倒序排列
+            episodes.sort((a, b) => {
+                const aNum = parseInt(a.getAttribute('data-episode')) || 0;
+                const bNum = parseInt(b.getAttribute('data-episode')) || 0;
+                return bNum - aNum;
+            });
+            
+            episodeList.classList.add('reversed');
+            button.innerHTML = '<i class="fa r3">&#xe557;</i>正序';
+            showTip('已切换到倒序排列');
+            
+            // 保存状态到localStorage
+            try {
+                localStorage.setItem(`episode_sort_${<?= $video['id'] ?>}`, 'true');
+            } catch (e) {
+                console.warn('保存排序状态失败:', e);
+            }
+        }
+        
+        // 重新挂载 DOM 元素
         episodes.forEach(episode => episodeList.appendChild(episode));
         
         // 重新高亮当前剧集
         highlightCurrentEpisode();
         
-        // 显示提示
-        showTip('剧集排序已切换');
+        // 智能滚动到当前剧集位置
+        // smartScrollToCurrentEpisode(); // 注释掉定位到剧集功能
+    }
+    
+    // 确保剧集列表是正序排列
+    function ensureEpisodeOrder() {
+        const episodeList = document.querySelector('.anthology-list-play');
+        if (!episodeList) return;
+        
+        // 检查当前是否已经是正序
+        const episodes = Array.from(episodeList.children);
+        if (episodes.length <= 1) return;
+        
+        // 检查前两个剧集是否按正序排列
+        const firstEpisode = parseInt(episodes[0].getAttribute('data-episode')) || 0;
+        const secondEpisode = parseInt(episodes[1].getAttribute('data-episode')) || 0;
+        
+        if (firstEpisode > secondEpisode) {
+            // 重新排序为正序
+            episodes.sort((a, b) => {
+                const aNum = parseInt(a.getAttribute('data-episode')) || 0;
+                const bNum = parseInt(b.getAttribute('data-episode')) || 0;
+                return aNum - bNum;
+            });
+            
+            // 重新挂载
+            episodes.forEach(episode => episodeList.appendChild(episode));
+        }
+    }
+    
+    // 初始化排序按钮状态
+    function initSortButtonState() {
+        const episodeList = document.querySelector('.anthology-list-play');
+        const button = document.getElementById('zxdaoxu');
+        
+        if (!episodeList || !button) {
+            return;
+        }
+        
+        // 从localStorage获取排序状态
+        try {
+            const sortState = localStorage.getItem(`episode_sort_${<?= $video['id'] ?>}`);
+            
+            if (sortState) {
+                const isReversed = JSON.parse(sortState);
+                
+                if (isReversed) {
+                    episodeList.classList.add('reversed');
+                    button.innerHTML = '<i class="fa r3">&#xe557;</i>正序';
+                } else {
+                    episodeList.classList.remove('reversed');
+                    button.innerHTML = '<i class="fa r3">&#xe557;</i>倒序';
+                }
+            } else {
+                // 确保默认是正序状态
+                episodeList.classList.remove('reversed');
+                button.innerHTML = '<i class="fa r3">&#xe557;</i>倒序';
+                
+                // 将默认正序状态保存到localStorage
+                try {
+                    localStorage.setItem(`episode_sort_${<?= $video['id'] ?>}`, 'false');
+                } catch (e) {
+                    console.warn('保存默认状态失败:', e);
+                }
+            }
+        } catch (e) {
+            console.warn('初始化排序按钮状态失败:', e);
+            // 出错时使用默认状态
+            episodeList.classList.remove('reversed');
+            button.innerHTML = '<i class="fa r3">&#xe557;</i>倒序';
+            
+            // 尝试保存默认状态
+            try {
+                localStorage.setItem(`episode_sort_${<?= $video['id'] ?>}`, 'false');
+            } catch (e2) {
+                console.warn('保存默认状态失败:', e2);
+            }
+        }
     }
     
     // 剧集布局切换（单列/多列）
@@ -1652,6 +2859,11 @@ html, body {
     
 
     
+    // 显示禁用剧集提示
+    function showDisabledEpisodeTip() {
+        showTip('该剧集暂无片源，请选择其他剧集');
+    }
+
     // 显示提示信息
     function showTip(message) {
         const tip = document.createElement('div');
@@ -1695,6 +2907,141 @@ html, body {
         }, 2000);
     }
     
+    // 显示播放错误提示（更醒目的错误提示）
+    function showPlayErrorTip(title, message) {
+        // 移除已存在的错误提示
+        const existingError = document.querySelector('.play-error-tip');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        const errorTip = document.createElement('div');
+        errorTip.className = 'play-error-tip';
+        errorTip.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            z-index: 10001;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(231, 76, 60, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: errorTipSlideIn 0.4s ease-out;
+        `;
+        
+        errorTip.innerHTML = `
+            <div style="margin-bottom: 15px;">
+                <i class="fa" style="color: #fff; font-size: 32px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">&#xe595;</i>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <h3 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600; color: #fff;">${title}</h3>
+                <p style="margin: 0; font-size: 14px; color: rgba(255,255,255,0.9); line-height: 1.4;">${message}</p>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="retryPlayback()" style="
+                    background: rgba(255,255,255,0.2);
+                    color: white;
+                    border: 1px solid rgba(255,255,255,0.3);
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                    flex: 1;
+                " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    重试播放
+                </button>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    background: rgba(255,255,255,0.1);
+                    color: white;
+                    border: 1px solid rgba(255,255,255,0.2);
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                    flex: 1;
+                " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    关闭
+                </button>
+            </div>
+        `;
+        
+        // 添加动画样式
+        if (!document.querySelector('#error-tip-style')) {
+            const style = document.createElement('style');
+            style.id = 'error-tip-style';
+            style.textContent = `
+                @keyframes errorTipSlideIn {
+                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8) translateY(-20px); }
+                    100% { opacity: 1; transform: translate(-50%, -50%) scale(1) translateY(0); }
+                }
+                
+                .play-error-tip {
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(errorTip);
+        
+        // 10秒后自动移除
+        setTimeout(() => {
+            if (errorTip.parentNode) {
+                errorTip.parentNode.removeChild(errorTip);
+            }
+        }, 10000);
+    }
+    
+    // 重试播放功能
+    function retryPlayback() {
+        // 移除错误提示
+        const errorTip = document.querySelector('.play-error-tip');
+        if (errorTip) {
+            errorTip.remove();
+        }
+        
+        if (isAudioMode && audioPlayerReady) {
+            // 音频模式重试
+            try {
+                audioPlayer.load();
+                audioPlayer.play().catch(e => {
+                    console.error('重试播放失败:', e);
+                    showPlayErrorTip('重试失败', '播放器重试失败，请刷新页面');
+                });
+            } catch (e) {
+                console.error('音频重试失败:', e);
+                showPlayErrorTip('重试失败', '音频播放器重试失败');
+            }
+        } else if (player && playerReady) {
+            // 视频模式重试
+            try {
+                player.load();
+                player.play().catch(e => {
+                    console.error('重试播放失败:', e);
+                    showPlayErrorTip('重试失败', '播放器重试失败，请刷新页面');
+                });
+            } catch (e) {
+                console.error('视频重试失败:', e);
+                showPlayErrorTip('重试失败', '视频播放器重试失败');
+            }
+        } else {
+            // 播放器未就绪，刷新页面
+            showTip('正在刷新页面...');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+    }
+    
     // 缓存管理函数
     function saveToHistory() {
         try {
@@ -1704,9 +3051,32 @@ html, body {
                 episode: <?= $currentEpisodeNumber ?? 1 ?>,
                 episodeTitle: "<?= $this->escape($currentEpisode['title'] ?? '') ?>",
                 poster: "<?= $this->escape($video['poster'] ?? '') ?>",
-                lastPlayed: Date.now(),
-                progress: loadProgress() || { time: 0, duration: 0 }
+                timestamp: Date.now(),
+                time: 0,
+                duration: 0
             };
+            
+            // 获取当前播放进度
+            if (isAudioMode && audioPlayerReady) {
+                historyData.time = Math.floor(audioPlayer.currentTime || 0);
+                historyData.duration = Math.floor(audioPlayer.duration || 0);
+            } else if (player && playerReady) {
+                historyData.time = Math.floor(player.currentTime() || 0);
+                historyData.duration = Math.floor(player.duration() || 0);
+            }
+            
+            // 如果播放器还没准备好，尝试从进度条获取
+            if (historyData.time === 0) {
+                const progressBar = document.getElementById('audioProgressBar');
+                if (progressBar) {
+                    const progress = progressBar.style.width;
+                    if (progress && progress !== '0%') {
+                        // 从进度条宽度估算播放时间
+                        const progressPercent = parseFloat(progress) / 100;
+                        historyData.time = Math.floor(progressPercent * 60); // 假设视频60分钟
+                    }
+                }
+            }
             
             let history = JSON.parse(localStorage.getItem('video_watch_history') || '[]');
             
@@ -1716,6 +3086,7 @@ html, body {
             );
             
             // 添加到开头
+            historyData.time = Math.max(historyData.time, 1); // 确保至少有1秒
             history.unshift(historyData);
             
             // 限制历史记录数量
@@ -1731,6 +3102,8 @@ html, body {
                 episode: historyData.episode,
                 timestamp: Date.now()
             }));
+            
+            console.log('保存播放记录:', historyData); // 调试用
             
         } catch (e) {
             console.warn('保存历史记录失败:', e);
@@ -1763,7 +3136,8 @@ html, body {
                     // 等待播放器就绪后自动恢复进度
                     if (player && playerReady) {
                         player.currentTime(progress.time);
-                        player.play();
+                        // 不自动播放，只恢复进度，避免被浏览器阻止
+                        // player.play();
                     } else {
                         // 如果播放器还没就绪，设置一个标记
                         window.autoRestoreProgress = progress;
@@ -1795,16 +3169,24 @@ html, body {
                 // 有剧集时的处理逻辑
                 const episodeNumber = parseInt(item.getAttribute('data-episode'));
                 const isCurrentEpisode = episodeNumber === currentEpisode;
+                const hasValidLink = item.getAttribute('data-has-link') === '1';
                 
                 // 获取剧集项内的链接元素
                 const linkElement = item.querySelector('a');
                 if (linkElement) {
                     if (isCurrentEpisode) {
-                        // 当前剧集：显示播放按钮动画
-                        linkElement.innerHTML = '<em class="play-on"><i></i><i></i><i></i><i></i></em>';
-                        item.classList.add('on', 'ecnav-dt');
+                        if (hasValidLink) {
+                            // 当前剧集且有链接：显示播放按钮动画
+                            linkElement.innerHTML = '<em class="play-on"><i></i><i></i><i></i><i></i></em>';
+                            item.classList.add('on', 'ecnav-dt');
+                        } else {
+                            // 当前剧集但无链接：显示禁用状态的播放按钮
+                            linkElement.innerHTML = '<em class="play-on disabled"><i></i><i></i><i></i><i></i></em>';
+                            item.classList.add('on', 'ecnav-dt', 'disabled');
+                        }
                         
                         // 滚动到当前剧集位置
+                        /*
                         setTimeout(() => {
                             item.scrollIntoView({ 
                                 behavior: 'smooth', 
@@ -1812,9 +3194,15 @@ html, body {
                                 inline: 'center'
                             });
                         }, 500);
+                        */
                     } else {
                         // 其他剧集：显示剧集文字
                         linkElement.innerHTML = `<span>第${String(episodeNumber).padStart(2, '0')}集</span>`;
+                        
+                        // 如果没有链接，添加禁用状态
+                        if (!hasValidLink) {
+                            item.classList.add('disabled');
+                        }
                     }
                 }
             } else {
@@ -1829,6 +3217,7 @@ html, body {
     }
     
     // 智能定位到当前剧集（考虑排序状态）
+    /*
     function smartScrollToCurrentEpisode() {
         const episodeList = document.querySelector('.anthology-list-play');
         if (!episodeList) return;
@@ -1864,6 +3253,7 @@ html, body {
             }
         }
     }
+    */
     
     // 自动播放下一集
     function autoPlayNextEpisode() {
@@ -2032,7 +3422,7 @@ html, body {
                 return null;
             }
             
-            // 查找下一个有效的剧集
+            // 查找下一个有效的剧集（跳过无链接的剧集）
             for (let i = actualIndex + 1; i < sortedEpisodes.length; i++) {
                 const nextEpisode = sortedEpisodes[i];
                 
@@ -2047,7 +3437,7 @@ html, body {
                 return null;
             }
             
-            // 查找下一个有效的剧集
+            // 查找下一个有效的剧集（跳过无链接的剧集）
             for (let i = currentIndex + 1; i < sortedEpisodes.length; i++) {
                 const nextEpisode = sortedEpisodes[i];
                 
@@ -2286,7 +3676,7 @@ html, body {
             // 检查视频源是否有效
             if (!targetEpisode.video_path || targetEpisode.video_path.trim() === '') {
                 console.error('剧集视频源为空:', targetEpisode);
-                showTip('该剧集暂无视频源');
+                showTip('该剧集暂无视频源，无法播放');
                 return;
             }
             
@@ -2306,80 +3696,18 @@ html, body {
                 // 不添加域名，让nginx处理路径映射（与PHP逻辑保持一致）
                 // videoUrl = 'https://m.ql82.com' + videoUrl;
             }
-                        
-            // 更新播放器源
-            if (player && playerReady) {
-                // 显示加载提示
-                showLoadingTip(`正在加载第${episodeNumber}集...`);
-                
-                // iOS优化：切源前先静音、暂停，避免有声自动播放被拦
-                player.pause();
-                player.muted(true);
-                
-                // 更新视频源 & 立即 load（video.js 会处理）
-                player.src({
-                    src: videoUrl,
-                    type: videoUrl.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4'
-                });
-                player.load();
-                
-                // iOS优化：等到可以播放再尝试 play（避免过早调用被拒）
-                const tryAutoplay = () => {
-                    player.play().then(() => {
-                        // 播上了 -> 稍后再恢复音量（给一点缓冲时间更稳）
-                        setTimeout(() => player.muted(false), 300);
-                        
-                        // 同步你的 UI/状态
-                        syncAllStates(episodeNumber);
-                        hideLoadingTip();
-                        
-                        // 显示切换成功提示
-                        showTip(`已切换到第${episodeNumber}集`);
-                    }).catch(() => {
-                        // 自动播失败 -> 弹出点击继续（一次点击就是手势，必过）
-                        hideLoadingTip();
-                        showPlayPrompt(episodeNumber); // 你已有
-                    });
-                };
-                
-                // 监听 canplay，再触发 tryAutoplay（readyState 足够时直接播）
-                if (player.readyState() >= 3) {
-                    tryAutoplay();
-                } else {
-                    player.one('canplay', tryAutoplay);
-                }
-                
-                // 防抖：再加个兜底 watchdog，2.5s 内没触发就再试一次
-                setTimeout(() => {
-                    if (player.paused()) { 
-                        tryAutoplay(); 
-                    }
-                }, 2500);
-                
-                // 监听错误事件
-                player.one('error', function() {
-                    console.error('视频加载失败');
-                    hideLoadingTip();
-                    showTip('视频加载失败，请检查网络或选择其他剧集');
-                    
-                    // 清理错误缓存
-                    clearInvalidCache();
-                    
-                    // 回退到传统方式
-                    setTimeout(() => {
-                        selectEpisode(episodeNumber);
-                    }, 2000);
-                });
-                
-                // 添加播放器点击事件监听，让用户可以通过点击来启用播放
-                player.one('click', function() {
-                    player.play().catch(error => {
-                        // 播放失败处理
-                    });
-                });
-                
+            
+            // 检查是否为音频文件
+            const isNewAudio = isAudioUrl(videoUrl);
+            
+            if (isAudioMode && isNewAudio) {
+                // 音频模式下的剧集切换
+                switchAudioEpisode(videoUrl, episodeNumber);
+            } else if (!isAudioMode && !isNewAudio) {
+                // 视频模式下的剧集切换
+                switchVideoEpisode(videoUrl, episodeNumber);
             } else {
-                // 如果播放器还没准备好，回退到传统方式
+                // 模式不匹配，回退到传统方式
                 selectEpisode(episodeNumber);
             }
         } else {
@@ -2388,6 +3716,188 @@ html, body {
         <?php else: ?>
         showTip('没有可用的剧集');
         <?php endif; ?>
+    }
+    
+    // 音频模式下的剧集切换
+    function switchAudioEpisode(videoUrl, episodeNumber) {
+        if (!audioPlayerReady) {
+            showTip('音频播放器未准备好');
+            return;
+        }
+        
+        // 显示加载提示
+        showLoadingTip(`正在加载第${episodeNumber}集...`);
+        
+        // 暂停当前播放
+        audioPlayer.pause();
+        
+        // 更新音频源
+        audioPlayer.src = videoUrl;
+        audioPlayer.load();
+        
+        // 监听加载完成
+        audioPlayer.addEventListener('loadedmetadata', function onLoaded() {
+            audioPlayer.removeEventListener('loadedmetadata', onLoaded);
+            
+            // 尝试播放
+            audioPlayer.play().then(() => {
+                // 同步状态
+                syncAllStates(episodeNumber);
+                hideLoadingTip();
+                showTip(`已切换到第${episodeNumber}集`);
+                
+                // 更新音频播放器信息
+                updateAudioPlayerInfo(episodeNumber);
+                
+                // 立即保存新剧集的进度（初始为0）
+                setTimeout(() => {
+                    saveProgress();
+                }, 100);
+            }).catch(() => {
+                hideLoadingTip();
+                showPlayPrompt(episodeNumber);
+            });
+        });
+        
+        // 错误处理
+        audioPlayer.addEventListener('error', function onError() {
+            audioPlayer.removeEventListener('error', onError);
+            hideLoadingTip();
+            
+            // 获取具体错误信息
+            let errorMessage = '音频加载失败，请检查网络或选择其他剧集';
+            let errorTitle = '音频加载失败';
+            
+            // 检查错误类型
+            if (onError.target && onError.target.error) {
+                switch (onError.target.error.code) {
+                    case MediaError.MEDIA_ERR_ABORTED:
+                        errorMessage = '音频播放被中断';
+                        break;
+                    case MediaError.MEDIA_ERR_NETWORK:
+                        errorMessage = '网络错误，音频无法加载';
+                        break;
+                    case MediaError.MEDIA_ERR_DECODE:
+                        errorMessage = '音频格式不支持或文件损坏';
+                        break;
+                    case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                        errorMessage = '音频源无法访问，可能是404错误';
+                        break;
+                    default:
+                        errorMessage = '音频加载失败，请检查网络或选择其他剧集';
+                }
+            }
+            
+            // 显示错误提示
+            showPlayErrorTip(errorTitle, errorMessage);
+        });
+    }
+    
+    // 视频模式下的剧集切换
+    function switchVideoEpisode(videoUrl, episodeNumber) {
+        if (!player || !playerReady) {
+            showTip('视频播放器未准备好');
+            return;
+        }
+        
+        // 显示加载提示
+        showLoadingTip(`正在加载第${episodeNumber}集...`);
+        
+        // iOS优化：切源前先静音、暂停，避免有声自动播放被拦
+        player.pause();
+        player.muted(true);
+        
+        // 更新视频源 & 立即 load（video.js 会处理）
+        player.src({
+            src: videoUrl,
+            type: videoUrl.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4'
+        });
+        player.load();
+        
+        // iOS优化：等到可以播放再尝试 play（避免过早调用被拒）
+        const tryAutoplay = () => {
+            player.play().then(() => {
+                // 播上了 -> 稍后再恢复音量（给一点缓冲时间更稳）
+                setTimeout(() => player.muted(false), 300);
+                
+                // 同步你的 UI/状态
+                syncAllStates(episodeNumber);
+                hideLoadingTip();
+                
+                // 显示切换成功提示
+                showTip(`已切换到第${episodeNumber}集`);
+                
+                // 立即保存新剧集的进度（初始为0）
+                setTimeout(() => {
+                    saveProgress();
+                }, 100);
+            }).catch(() => {
+                // 自动播失败 -> 弹出点击继续（一次点击就是手势，必过）
+                hideLoadingTip();
+                showPlayPrompt(episodeNumber); // 你已有
+            });
+        };
+        
+        // 监听 canplay，再触发 tryAutoplay（readyState 足够时直接播）
+        if (player.readyState() >= 3) {
+            tryAutoplay();
+        } else {
+            player.one('canplay', tryAutoplay);
+        }
+        
+        // 防抖：再加个兜底 watchdog，2.5s 内没触发就再试一次
+        setTimeout(() => {
+            if (player.paused()) { 
+                tryAutoplay(); 
+            }
+        }, 2500);
+        
+        // 监听错误事件
+        player.one('error', function() {
+            console.error('视频加载失败');
+            hideLoadingTip();
+            
+            // 获取具体错误信息
+            const error = player.error();
+            let errorMessage = '视频加载失败，请检查网络或选择其他剧集';
+            
+            if (error) {
+                switch (error.code) {
+                    case 1:
+                        errorMessage = '视频加载失败，可能是网络问题或文件不存在';
+                        break;
+                    case 2:
+                        errorMessage = '网络连接异常，请检查网络设置';
+                        break;
+                    case 3:
+                        errorMessage = '视频格式不支持或文件损坏';
+                        break;
+                    case 4:
+                        errorMessage = '视频源无法访问，可能是404错误';
+                        break;
+                    default:
+                        errorMessage = '视频加载失败，请检查网络或选择其他剧集';
+                }
+            }
+            
+            // 显示错误提示
+            showPlayErrorTip('剧集切换失败', errorMessage);
+            
+            // 清理错误缓存
+            clearInvalidCache();
+            
+            // 回退到传统方式
+            setTimeout(() => {
+                selectEpisode(episodeNumber);
+            }, 2000);
+        });
+        
+        // 添加播放器点击事件监听，让用户可以通过点击来启用播放
+        player.one('click', function() {
+            player.play().catch(error => {
+                // 播放失败处理
+            });
+        });
     }
     
     // 立即更新缓存（用户点击剧集时调用）
@@ -2467,6 +3977,7 @@ html, body {
                     item.classList.add('on', 'ecnav-dt');
                     
                     // 滚动到当前剧集位置
+                    /*
                     setTimeout(() => {
                         item.scrollIntoView({ 
                             behavior: 'smooth', 
@@ -2474,6 +3985,7 @@ html, body {
                             inline: 'center'
                         });
                     }, 300);
+                    */
                 } else {
                     // 其他剧集：显示剧集文字
                     linkElement.innerHTML = `<span>第${String(itemEpisodeNumber).padStart(2, '0')}集</span>`;
@@ -2625,11 +4137,16 @@ html, body {
             // 6. 更新全局变量
             updateGlobalEpisodeState(episodeNumber);
             
-            // 7. 清理可能存在的错误状态
-            clearInvalidCache();
-        } catch (e) {
-            console.error('状态同步失败:', e);
+                    // 7. 清理可能存在的错误状态
+        clearInvalidCache();
+        
+        // 8. 如果是音频模式，更新锁屏信息
+        if (window.isAudioOnly) {
+            updateMediaSessionMetadata();
         }
+    } catch (e) {
+        console.error('状态同步失败:', e);
+    }
     }
     
     // 同步自动播放按钮状态
@@ -2675,20 +4192,37 @@ html, body {
     
     // 保存播放进度
     function saveProgress() {
-        if (!player || !playerReady) return;
-        
         try {
-            const storageKey = `video_progress_${<?= $video['id'] ?>}_${<?= $currentEpisodeNumber ?? 1 ?>}`;
-            const progress = {
-                time: player.currentTime(),
-                duration: player.duration(),
-                timestamp: Date.now(),
-                videoId: <?= $video['id'] ?>
-            };
-            localStorage.setItem(storageKey, JSON.stringify(progress));
+            // 使用JavaScript的当前剧集号，而不是PHP的固定值
+            const currentEpisode = window.currentEpisodeNumber || <?= $currentEpisodeNumber ?? 1 ?>;
+            const storageKey = `video_progress_${<?= $video['id'] ?>}_${currentEpisode}`;
+            let progress = null;
             
-            // 同时保存到历史记录
-            saveToHistory();
+            if (isAudioMode && audioPlayerReady) {
+                // 音频模式
+                progress = {
+                    time: audioPlayer.currentTime,
+                    duration: audioPlayer.duration,
+                    timestamp: Date.now(),
+                    videoId: <?= $video['id'] ?>,
+                    episode: currentEpisode
+                };
+            } else if (player && playerReady) {
+                // 视频模式
+                progress = {
+                    time: player.currentTime(),
+                    duration: player.duration(),
+                    timestamp: Date.now(),
+                    videoId: <?= $video['id'] ?>,
+                    episode: currentEpisode
+                };
+            }
+            
+            if (progress) {
+                localStorage.setItem(storageKey, JSON.stringify(progress));
+                // 同时保存到历史记录
+                saveToHistory();
+            }
         } catch (e) {
             console.warn('保存播放进度失败:', e);
         }
@@ -2697,11 +4231,13 @@ html, body {
     // 加载播放进度
     function loadProgress() {
         try {
-            const storageKey = `video_progress_${<?= $video['id'] ?>}_${<?= $currentEpisodeNumber ?? 1 ?>}`;
+            // 使用JavaScript的当前剧集号，而不是PHP的固定值
+            const currentEpisode = window.currentEpisodeNumber || <?= $currentEpisodeNumber ?? 1 ?>;
+            const storageKey = `video_progress_${<?= $video['id'] ?>}_${currentEpisode}`;
             const saved = localStorage.getItem(storageKey);
             if (saved) {
                 const progress = JSON.parse(saved);
-                // 检查进度是否有效（不超过视频总长度的90%）
+                // 检查进度是否有效（不超过媒体总长度的90%）
                 if (progress.time && progress.duration && progress.time < progress.duration * 0.9) {
                     return progress;
                 }
@@ -2712,6 +4248,109 @@ html, body {
         return null;
     }
     
+    // 定期保存播放记录
+    function startHistorySaving() {
+        // 每30秒保存一次播放记录
+        setInterval(() => {
+            if (isAudioMode && audioPlayerReady && !audioPlayer.paused) {
+                saveToHistory();
+            } else if (player && playerReady && !player.paused()) {
+                saveToHistory();
+            }
+        }, 30000);
+    }
+    
+    // 启用后台/锁屏播放模式（Media Session）
+    function enableBackgroundAudioMode() {
+        // 让控制中心/锁屏显示标题封面并控制播放
+        if ('mediaSession' in navigator) {
+            updateMediaSessionMetadata();
+
+            if (isAudioMode && audioPlayerReady) {
+                // 音频模式
+                const setPos = () => {
+                    try {
+                        navigator.mediaSession.setPositionState({
+                            duration: audioPlayer.duration || 0,
+                            playbackRate: 1,
+                            position: audioPlayer.currentTime || 0
+                        });
+                    } catch(e){}
+                };
+
+                navigator.mediaSession.setActionHandler('play',  () => audioPlayer.play());
+                navigator.mediaSession.setActionHandler('pause', () => audioPlayer.pause());
+                navigator.mediaSession.setActionHandler('seekbackward', () => audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10));
+                navigator.mediaSession.setActionHandler('seekforward',  () => audioPlayer.currentTime = Math.min((audioPlayer.duration||0), audioPlayer.currentTime + 10));
+                
+                // 音频模式下的上一首/下一首
+                try { 
+                    navigator.mediaSession.setActionHandler('previoustrack', () => {
+                        const prevBtn = document.getElementById('audioPrev');
+                        if (prevBtn) prevBtn.click();
+                    }); 
+                } catch(e){}
+                try { 
+                    navigator.mediaSession.setActionHandler('nexttrack', () => {
+                        const nextBtn = document.getElementById('audioNext');
+                        if (nextBtn) nextBtn.click();
+                    }); 
+                } catch(e){}
+
+                audioPlayer.addEventListener('timeupdate', setPos);
+                audioPlayer.addEventListener('loadedmetadata', () => { 
+                    updateMediaSessionMetadata(); 
+                    setPos(); 
+                });
+            } else if (player && playerReady) {
+                // 视频模式
+                const setPos = () => {
+                    try {
+                        navigator.mediaSession.setPositionState({
+                            duration: player.duration() || 0,
+                            playbackRate: player.playbackRate ? player.playbackRate() : 1,
+                            position: player.currentTime() || 0
+                        });
+                    } catch(e){}
+                };
+
+                navigator.mediaSession.setActionHandler('play',  () => player.play());
+                navigator.mediaSession.setActionHandler('pause', () => player.pause());
+                navigator.mediaSession.setActionHandler('seekbackward', () => player.currentTime(Math.max(0, player.currentTime() - 10)));
+                navigator.mediaSession.setActionHandler('seekforward',  () => player.currentTime(Math.min((player.duration()||0), player.currentTime() + 10)));
+                // 可选：上一集/下一集
+                try { 
+                    navigator.mediaSession.setActionHandler('previoustrack', () => null); 
+                } catch(e){}
+                try { 
+                    navigator.mediaSession.setActionHandler('nexttrack', () => autoPlayNextEpisode()); 
+                } catch(e){}
+
+                player.on('timeupdate', setPos);
+                player.on('ratechange', setPos);
+                player.on('loadedmetadata', () => { 
+                    updateMediaSessionMetadata(); 
+                    setPos(); 
+                });
+            }
+        }
+    }
+
+    // 切集时更新锁屏显示
+    function updateMediaSessionMetadata() {
+        if (!('mediaSession' in navigator)) return;
+        try {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: (document.querySelector('.player-title-link')?.textContent || videoTitle || '正在播放'),
+                artist: '星海影院',
+                album: '',
+                artwork: [
+                    { src: (videoPoster || '/template/yuyuyy/asset/img/logo-1.png'), sizes: '512x512', type: 'image/png' }
+                ]
+            });
+        } catch(e){}
+    }
+
     // 显示进度提示
     function showProgressTip(progress) {
         const tip = document.createElement('div');
@@ -2757,6 +4396,169 @@ html, body {
             }
         }, 2000);
     }
+    
+    // 收藏功能
+    let isFavorited = false;
+    
+    // 页面加载时检查收藏状态
+    document.addEventListener('DOMContentLoaded', function() {
+        checkCollectionStatus();
+    });
+    
+    // 检查收藏状态
+    function checkCollectionStatus() {
+        // 检查是否已登录
+        fetch('/api/user.php?action=check_favorite&video_id=<?= $video['id'] ?>')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    isFavorited = data.is_favorited;
+                    updateCollectionUI();
+                }
+            })
+            .catch(error => {
+                console.log('未登录或检查收藏状态失败');
+            });
+    }
+    
+    // 切换收藏状态
+    function toggleCollection(videoId) {
+        // 检查是否已登录
+        fetch('/api/user.php?action=check_favorite&video_id=' + videoId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 已登录，执行收藏/取消收藏
+                    if (isFavorited) {
+                        removeFromCollection(videoId);
+                    } else {
+                        addToCollection(videoId);
+                    }
+                } else {
+                    // 未登录，跳转到登录页
+                    if (confirm('请先登录后再收藏，是否前往登录？')) {
+                        window.location.href = '/user/login.php';
+                    }
+                }
+            })
+            .catch(error => {
+                // 网络错误，跳转到登录页
+                if (confirm('网络错误，是否前往登录页？')) {
+                    window.location.href = '/user/login.php';
+                }
+            });
+    }
+    
+    // 添加到收藏
+    function addToCollection(videoId) {
+        const formData = new FormData();
+        formData.append('video_id', videoId);
+        formData.append('type', 1);
+        
+        fetch('/api/user.php?action=add_favorite', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                isFavorited = true;
+                updateCollectionUI();
+                showMessage('收藏成功！', 'success');
+            } else {
+                showMessage(data.message || '收藏失败', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('网络错误，请重试', 'error');
+        });
+    }
+    
+    // 从收藏中移除
+    function removeFromCollection(videoId) {
+        if (!confirm('确定要取消收藏吗？')) return;
+        
+        const formData = new FormData();
+        formData.append('video_id', videoId);
+        
+        fetch('/api/user.php?action=remove_favorite', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                isFavorited = false;
+                updateCollectionUI();
+                showMessage('已取消收藏', 'success');
+            } else {
+                showMessage(data.message || '操作失败', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('网络错误，请重试', 'error');
+        });
+    }
+    
+    // 更新收藏按钮UI
+    function updateCollectionUI() {
+        const icon = document.getElementById('collectionIcon');
+        const text = document.getElementById('collectionText');
+        const btn = document.getElementById('collectionBtn');
+        
+        if (isFavorited) {
+            icon.innerHTML = '&#xe578;'; // 已收藏图标
+            text.textContent = '已收藏';
+            btn.classList.add('collected');
+        } else {
+            icon.innerHTML = '&#xe577;'; // 未收藏图标
+            text.textContent = '收藏';
+            btn.classList.remove('collected');
+        }
+    }
+    
+    // 显示消息提示
+    function showMessage(message, type = 'info') {
+        const tip = document.createElement('div');
+        tip.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideInRight 0.3s ease-out;
+        `;
+        tip.textContent = message;
+        
+        // 添加动画样式
+        if (!document.querySelector('#message-tip-style')) {
+            const style = document.createElement('style');
+            style.id = 'message-tip-style';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        document.body.appendChild(tip);
+        
+        // 3秒后自动移除
+        setTimeout(() => {
+            if (tip.parentNode) {
+                tip.parentNode.removeChild(tip);
+            }
+        }, 3000);
+    }
+    
+
 </script>
 <div class="none">
     <span class="ds-log-set" data-type="4" data-mid="1" data-id="<?= $video['id'] ?>" data-sid="1" data-nid="1"></span>

@@ -39,6 +39,172 @@ $parentCategories = $videoModel->getParentCategories();
     color: #fff;
     text-decoration: none;
 }
+
+/* 播放记录弹窗样式 */
+.gen-history-list {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.play-catalog {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+.play-catalog span {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.play-catalog span.on {
+    color: #667eea;
+    border-bottom: 2px solid #667eea;
+}
+
+.play-catalog span:hover {
+    color: #667eea;
+}
+
+.history-item {
+    margin-bottom: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.history-link {
+    display: flex;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.history-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+    color: inherit;
+}
+
+.history-poster {
+    width: 60px;
+    height: 80px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.history-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.history-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.history-title {
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.history-time {
+    color: #999;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.history-progress {
+    color: #667eea;
+    font-size: 12px;
+}
+
+.no-history {
+    text-align: center;
+    color: #999;
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+/* 云端登录提示样式 */
+.cloud-login-prompt {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.cloud-icon {
+    margin-bottom: 20px;
+}
+
+.cloud-text {
+    color: #999;
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+.cloud-login-btn {
+    display: inline-block;
+    background: #667eea;
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.cloud-login-btn:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    text-decoration: none;
+    color: #fff;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .history-poster {
+        width: 50px;
+        height: 70px;
+        margin-right: 12px;
+    }
+    
+    .history-title {
+        font-size: 13px;
+    }
+    
+    .history-time,
+    .history-progress {
+        font-size: 11px;
+    }
+    
+    .cloud-login-prompt {
+        padding: 30px 15px;
+    }
+    
+    .cloud-text {
+        font-size: 14px;
+    }
+    
+    .cloud-login-btn {
+        padding: 10px 25px;
+        font-size: 14px;
+    }
+}
 </style>
 
 <!-- Logo显示 -->
@@ -156,15 +322,23 @@ $parentCategories = $videoModel->getParentCategories();
                 <i class="fa ds-sousuo"></i>
             </a>
         </div>
+        <div class="gen-history margin wap-show pc-hide">
+            <a class="content-center" href="javascript:">
+                <i class="fa ds-lishijilu"></i>
+            </a>
+        </div>
         <div class="gen-left-list margin wap-show pc-hide">
             <a class="content-center" href="javascript:">
                 <i class="fa ds-menu"></i>
             </a>
         </div>
         
-        <!-- <div class="gen-history margin"><a class="content-center" href="javascript:"><i class="fa ds-lishijilu"></i><em>播放记录</em></a></div>
-        <div class="margin"><a class="content-center" href="/"><i class="fa ds-xiazai"></i><em>客户端</em></a></div>
-        <div class="margin user-center"><a class="content-center" href="javascript:"><i class="fa ds-yonghu"></i><em>登录</em></a></div> -->
+        <!-- <div class="margin"><a class="content-center" href="/"><i class="fa ds-xiazai"></i><em>客户端</em></a></div> -->
+        <div class="margin user-center" id="userCenter">
+            <a class="content-center" href="/user/login" id="loginBtn">
+                <i class="fa ds-yonghu"></i><em>登录</em>
+            </a>
+        </div>
     </div>
 </div>
 
@@ -214,6 +388,40 @@ $parentCategories = $videoModel->getParentCategories();
                 <li><a href="/search?wd=寄生虫" class="vod-link br b-b"><span class="vod-on-e-styles key4 cor5">4</span><div class="vod-center">寄生虫</div></a></li>
                 <li><a href="/search?wd=闪灵" class="vod-link br b-b"><span class="vod-on-e-styles key5 cor5">5</span><div class="vod-center">闪灵</div></a></li>
             </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 播放记录弹窗 -->
+<div class="pop-list-body gen-history-list bj pop-2" style="display:none;">
+    <div class="wap-head" style="display:none">
+        <div class="l">
+            <a class="fa pop-bj cor4" href="javascript:">&#xe566;</a>
+        </div>
+        <h2 class="hidden">
+            <a class="cor4 b" href="javascript:">播放记录</a>
+        </h2>
+    </div>
+    <div class="wap-head-z"></div>
+    <div class="play-catalog flex around ft4 b">
+        <span class="rel on" data-tab="local"><a href="javascript:">本地记录</a></span>
+        <span class="rel" data-tab="cloud"><a href="javascript:">云端记录</a></span>
+    </div>
+    <div class="top30 mask-1-box">
+        <div class="locality-history history check" id="localTab">
+            <ul id="localHistoryList">
+                <!-- 本地播放记录将通过JavaScript动态添加 -->
+            </ul>
+            <a id="l_history" href="javascript:" class="button top30 ol2" style="width:100%">清空记录</a>
+        </div>
+        <div class="user-history history" id="cloudTab" style="display:none;">
+            <div class="cloud-login-prompt">
+                <div class="cloud-icon">
+                    <i class="fa ds-yonghu" style="font-size: 48px; color: #667eea;"></i>
+                </div>
+                <div class="cloud-text">请登录后查看</div>
+                <a href="javascript:" class="cloud-login-btn">立即登录</a>
+            </div>
         </div>
     </div>
 </div>
@@ -352,5 +560,315 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.cssText = '';
         });
     }
+    
+    // 播放记录功能
+    const historyBtn = document.querySelector('.gen-history');
+    const historyPopup = document.querySelector('.pop-2');
+    const localHistoryList = document.getElementById('localHistoryList');
+    const clearHistoryBtn = document.getElementById('l_history');
+    
+    // 播放记录按钮点击事件
+    if (historyBtn) {
+        historyBtn.addEventListener('click', function() {
+            historyPopup.style.display = 'block';
+            // 默认显示本地记录标签
+            showLocalTab();
+            loadPlayHistory();
+        });
+    }
+    
+    // 显示本地记录标签
+    function showLocalTab() {
+        // 激活本地记录标签
+        document.querySelector('[data-tab="local"]').classList.add('on');
+        document.querySelector('[data-tab="cloud"]').classList.remove('on');
+        
+        // 显示本地记录内容
+        localTab.style.display = 'block';
+        cloudTab.style.display = 'none';
+    }
+    
+    // 标签切换功能
+    const tabButtons = document.querySelectorAll('.play-catalog span');
+    const localTab = document.getElementById('localTab');
+    const cloudTab = document.getElementById('cloudTab');
+    
+    tabButtons.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            const tabType = this.getAttribute('data-tab');
+            
+            // 移除所有标签的激活状态
+            tabButtons.forEach(t => t.classList.remove('on'));
+            // 激活当前标签
+            this.classList.add('on');
+            
+            // 隐藏所有内容
+            localTab.style.display = 'none';
+            cloudTab.style.display = 'none';
+            
+            // 显示对应内容
+            if (tabType === 'local') {
+                localTab.style.display = 'block';
+                loadPlayHistory(); // 重新加载本地记录
+            } else if (tabType === 'cloud') {
+                cloudTab.style.display = 'block';
+            }
+        });
+    });
+    
+    // 测试播放记录功能（开发时使用，生产环境可以删除）
+    function testPlayHistory() {
+        const testData = {
+            videoId: 1,
+            title: "测试视频",
+            episode: 1,
+            episodeTitle: "第1集",
+            poster: "/template/yuyuyy/asset/img/img-bj-k.png",
+            timestamp: Date.now() - 3600000, // 1小时前
+            time: 1800, // 30分钟
+            duration: 3600 // 1小时
+        };
+        
+        let history = JSON.parse(localStorage.getItem('video_watch_history') || '[]');
+        history.unshift(testData);
+        localStorage.setItem('video_watch_history', JSON.stringify(history));
+        console.log('测试数据已添加');
+    }
+    
+    // 加载播放记录
+    function loadPlayHistory() {
+        try {
+            const history = JSON.parse(localStorage.getItem('video_watch_history') || '[]');
+            console.log('加载播放记录:', history); // 调试用
+            
+            if (history.length === 0) {
+                localHistoryList.innerHTML = '<li class="no-history">暂无播放记录</li>';
+                return;
+            }
+            
+            let historyHTML = '';
+            history.forEach((item, index) => {
+                const timeAgo = getTimeAgo(item.timestamp);
+                console.log('处理记录项:', item, '时间:', item.time, '格式化后:', formatTime(item.time)); // 调试用
+                historyHTML += `
+                    <li class="history-item">
+                        <a href="/?page=play&id=${item.videoId}&episode=${item.episode}" class="history-link">
+                            <div class="history-poster">
+                                <img src="${item.poster || '/template/yuyuyy/asset/img/img-bj-k.png'}" alt="${item.title}" onerror="this.src='/template/yuyuyy/asset/img/img-bj-k.png'">
+                            </div>
+                            <div class="history-info">
+                                <div class="history-title">${item.title} 第${item.episode}集</div>
+                                <div class="history-time">${timeAgo}</div>
+                                <div class="history-progress">播放至 ${formatTime(item.time)}</div>
+                            </div>
+                        </a>
+                    </li>
+                `;
+            });
+            
+            localHistoryList.innerHTML = historyHTML;
+        } catch (e) {
+            console.warn('加载播放记录失败:', e);
+            localHistoryList.innerHTML = '<li class="no-history">加载失败</li>';
+        }
+    }
+    
+    // 清空播放记录
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', function() {
+            if (confirm('确定要清空所有播放记录吗？')) {
+                localStorage.removeItem('video_watch_history');
+                localHistoryList.innerHTML = '<li class="no-history">暂无播放记录</li>';
+            }
+        });
+    }
+    
+    // 获取时间差
+    function getTimeAgo(timestamp) {
+        const now = Date.now();
+        const diff = now - timestamp;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (days > 0) return `${days}天前`;
+        if (hours > 0) return `${hours}小时前`;
+        if (minutes > 0) return `${minutes}分钟前`;
+        return '刚刚';
+    }
+    
+    // 格式化时间
+    function formatTime(seconds) {
+        if (!seconds) return '0:00';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    
+    // 关闭播放记录弹窗
+    const closeHistoryButtons = document.querySelectorAll('.pop-2 .pop-bj');
+    closeHistoryButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            historyPopup.style.display = 'none';
+        });
+    });
+    
+    // 点击弹窗背景关闭播放记录弹窗
+    if (historyPopup) {
+        historyPopup.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+    }
+    
+    // 用户登录状态检查
+    function checkUserLoginStatus() {
+        // 检查是否有用户token
+        const userToken = getCookie('user_token');
+        if (userToken) {
+            // 验证token有效性
+            fetch('/api/user.php?action=get_user_info')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateUserUI(data.user);
+                    } else {
+                        clearUserUI();
+                    }
+                })
+                .catch(error => {
+                    clearUserUI();
+                });
+        } else {
+            clearUserUI();
+        }
+    }
+    
+    // 更新用户UI
+    function updateUserUI(user) {
+        const userCenter = document.getElementById('userCenter');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        if (userCenter && loginBtn) {
+            loginBtn.innerHTML = `
+                <i class="fa ds-yonghu"></i>
+                <em>${user.username}</em>
+            `;
+            loginBtn.href = '/user/';
+            loginBtn.onclick = null; // 移除登录页跳转
+            
+            // 添加用户菜单
+            if (!document.getElementById('userMenu')) {
+                const userMenu = document.createElement('div');
+                userMenu.id = 'userMenu';
+                userMenu.className = 'user-menu';
+                userMenu.innerHTML = `
+                    <div class="user-menu-item">
+                        <a href="/user/"><i class="fa ds-yonghu"></i>个人中心</a>
+                    </div>
+                    <div class="user-menu-item">
+                        <a href="javascript:" onclick="logout()"><i class="fa ds-tuichu"></i>退出登录</a>
+                    </div>
+                `;
+                userCenter.appendChild(userMenu);
+                
+                // 添加用户菜单样式
+                if (!document.getElementById('userMenuStyle')) {
+                    const style = document.createElement('style');
+                    style.id = 'userMenuStyle';
+                    style.textContent = `
+                        .user-center {
+                            position: relative;
+                        }
+                        .user-menu {
+                            position: absolute;
+                            top: 100%;
+                            right: 0;
+                            background: #fff;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                            display: none;
+                            z-index: 1000;
+                            min-width: 120px;
+                        }
+                        .user-menu-item {
+                            padding: 10px 15px;
+                            border-bottom: 1px solid #f0f0f0;
+                        }
+                        .user-menu-item:last-child {
+                            border-bottom: none;
+                        }
+                        .user-menu-item a {
+                            color: #333;
+                            text-decoration: none;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                        }
+                        .user-menu-item a:hover {
+                            color: #667eea;
+                        }
+                        .user-center:hover .user-menu {
+                            display: block;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+        }
+    }
+    
+    // 清除用户UI
+    function clearUserUI() {
+        const userCenter = document.getElementById('userCenter');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        if (userCenter && loginBtn) {
+            loginBtn.innerHTML = `
+                <i class="fa ds-yonghu"></i>
+                <em>登录</em>
+            `;
+            loginBtn.href = '/user/login';
+            
+            // 移除用户菜单
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu) {
+                userMenu.remove();
+            }
+        }
+    }
+    
+    // 退出登录
+    function logout() {
+        if (confirm('确定要退出登录吗？')) {
+            fetch('/api/user.php?action=logout')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        clearUserUI();
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    clearUserUI();
+                    window.location.reload();
+                });
+        }
+    }
+    
+    // 获取Cookie
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+    
+    // 页面加载完成后检查用户登录状态
+    document.addEventListener('DOMContentLoaded', function() {
+        checkUserLoginStatus();
+    });
 });
 </script>
