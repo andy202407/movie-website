@@ -1841,7 +1841,7 @@ html, body {
                                         <i class="fa r6" id="collectionIcon">&#xe577;</i><span id="collectionText">收藏</span>
                                     </a>
                                     <a class="ec-report item cor5" data-url="编号【<?= $video['id'] ?>】名称【<?= $this->escape($video['title']) ?>】不能观看请检查修复" data-id="<?= $video['id'] ?>"><i class="fa r6">&#xe595;</i>报错</a>
-                                    <a class="item player-share-button cor5"><i class="fa r6">&#xe569;</i>分享</a>
+                                    <a class="item player-share-button cor5" onclick="shareVideo()"><i class="fa r6">&#xe569;</i>分享</a>
                                 </div>
                                 <div class="player-share-box radius topfadeInUp none box">
                                     <div class="flex">
@@ -4658,6 +4658,63 @@ html, body {
         }, 3000);
     }
     
+    // 分享视频功能
+    function shareVideo() {
+        // 获取当前页面信息
+        const videoTitle = document.querySelector('.player-title-link')?.textContent || '精彩视频';
+        const currentUrl = window.location.href;
+        const videoPoster = document.querySelector('.player-poster img')?.src || '';
+        
+        // 检查是否支持Web Share API
+        if (navigator.share && navigator.canShare) {
+            // 现代浏览器，使用原生分享
+            const shareData = {
+                title: videoTitle,
+                text: `推荐一部好片：${videoTitle}`,
+                url: currentUrl
+            };
+            
+            // 如果有海报图片，也加入分享
+            if (videoPoster && videoPoster !== '') {
+                shareData.url = currentUrl;
+            }
+            
+            navigator.share(shareData)
+                .then(() => {
+                    console.log('分享成功');
+                })
+                .catch((error) => {
+                    console.log('分享失败:', error);
+                    // 如果原生分享失败，回退到复制链接
+                    fallbackShare();
+                });
+        } else {
+            // 不支持Web Share API，使用回退方案
+            fallbackShare();
+        }
+    }
+    
+    // 回退分享方案（复制链接到剪贴板）
+    function fallbackShare() {
+        const videoTitle = document.querySelector('.player-title-link')?.textContent || '精彩视频';
+        const currentUrl = window.location.href;
+        const shareText = `${videoTitle}\n${currentUrl}`;
+        
+        // 尝试复制到剪贴板
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareText)
+                .then(() => {
+                    showMessage('链接已复制到剪贴板，可以分享给朋友了！', 'success');
+                })
+                .catch(() => {
+                    // 如果复制失败，静默处理
+                    console.log('复制失败');
+                });
+        } else {
+            // 不支持剪贴板API，静默处理
+            console.log('不支持剪贴板API');
+        }
+    }
 
 </script>
 <div class="none">
