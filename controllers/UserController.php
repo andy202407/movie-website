@@ -18,10 +18,9 @@ class UserController {
         
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
-        $email = trim($_POST['email'] ?? '');
         
         // 验证输入
-        if (empty($username) || empty($password) || empty($email)) {
+        if (empty($username) || empty($password)) {
             $this->jsonResponse(['success' => false, 'message' => '请填写完整信息']);
             return;
         }
@@ -36,12 +35,7 @@ class UserController {
             return;
         }
         
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->jsonResponse(['success' => false, 'message' => '邮箱格式不正确']);
-            return;
-        }
-        
-        $result = $this->userModel->register($username, $password, $email);
+        $result = $this->userModel->register($username, $password);
         $this->jsonResponse($result);
     }
     
@@ -67,7 +61,7 @@ class UserController {
             session_start();
             $_SESSION['user_id'] = $result['user']['id'];
             $_SESSION['username'] = $result['user']['username'];
-            $_SESSION['email'] = $result['user']['email'];
+            $_SESSION['email'] = $result['user']['email'] ?? '';
             
             // 设置cookie（可选）
             if (isset($_POST['remember']) && $_POST['remember'] == '1') {
@@ -84,7 +78,15 @@ class UserController {
         session_destroy();
         setcookie('user_token', '', time() - 3600, '/');
         
-        $this->jsonResponse(['success' => true, 'message' => '登出成功']);
+        // 检查是否是AJAX请求
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            // AJAX请求，返回JSON响应
+            $this->jsonResponse(['success' => true, 'message' => '登出成功', 'redirect' => '/']);
+        } else {
+            // 普通请求，直接重定向到首页
+            header('Location: /');
+            exit;
+        }
     }
     
     // 添加收藏

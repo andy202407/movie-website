@@ -10,7 +10,7 @@ class UserModel {
     }
     
     // 用户注册
-    public function register($username, $password, $email) {
+    public function register($username, $password) {
         try {
             // 检查用户名是否已存在
             $stmt = $this->db->prepare("SELECT id FROM users WHERE username = ?");
@@ -19,19 +19,12 @@ class UserModel {
                 return ['success' => false, 'message' => '用户名已存在'];
             }
             
-            // 检查邮箱是否已存在
-            $stmt = $this->db->prepare("SELECT id FROM users WHERE email = ?");
-            $stmt->execute([$email]);
-            if ($stmt->fetch()) {
-                return ['success' => false, 'message' => '邮箱已被注册'];
-            }
-            
             // 密码加密
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             
             // 插入新用户
-            $stmt = $this->db->prepare("INSERT INTO users (username, password, email, created_at) VALUES (?, ?, ?, NOW())");
-            $result = $stmt->execute([$username, $hashedPassword, $email]);
+            $stmt = $this->db->prepare("INSERT INTO users (username, password, email, created_at) VALUES (?, ?, NULL, NOW())");
+            $result = $stmt->execute([$username, $hashedPassword]);
             
             if ($result) {
                 return ['success' => true, 'message' => '注册成功', 'user_id' => $this->db->lastInsertId()];

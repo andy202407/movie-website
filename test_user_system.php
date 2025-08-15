@@ -42,9 +42,9 @@ try {
 // 测试4：文件路径测试
 echo "<h2>4. 文件路径测试</h2>";
 $files = [
-    'frontend-template/user/login.php',
-    'frontend-template/user/register.php',
-    'frontend-template/user/index.php',
+    'frontend-template/user/login',
+    'frontend-template/user/register',
+    'frontend-template/user/index',
     'api/user.php'
 ];
 

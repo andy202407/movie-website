@@ -1,4 +1,6 @@
 <?php
+// 引入数据库连接
+require_once __DIR__ . '/Database.php';
 
 class Router {
     private $routes = [];
@@ -470,9 +472,45 @@ class Router {
             exit;
         }
         
-        // 直接显示用户中心页面
-        include 'frontend-template/user/index.php';
+        // 获取用户信息
+        $userInfo = $this->getUserInfo($_SESSION['user_id']);
+        
+        // 获取分类数据用于header
+        $categories = $this->videoModel->getAllCategories();
+        $parentCategories = array_filter($categories, function($cat) {
+            return empty($cat['parent_id']);
+        });
+        
+        // 设置变量，使其在模板中可用
+        $this->templateEngine->assignArray([
+            'userInfo' => $userInfo,
+            'categories' => $categories,
+            'parentCategories' => $parentCategories
+        ]);
+        
+        // 使用模板引擎显示用户页面
+        $this->templateEngine->display('user/index');
         exit;
+    }
+    
+    // 添加escape方法，用于模板中的安全输出
+    public function escape($string) {
+        if (is_string($string)) {
+            return htmlspecialchars($string, ENT_QUOTES, 'UTF-8');
+        }
+        return $string;
+    }
+    
+    // 获取用户信息
+    private function getUserInfo($userId) {
+        try {
+            $db = Database::getInstance();
+            $user = $db->fetchOne("SELECT id, username, email, created_at, last_login FROM users WHERE id = ?", [$userId]);
+            return $user;
+        } catch (Exception $e) {
+            error_log("获取用户信息失败: " . $e->getMessage());
+            return null;
+        }
     }
     
     private function user_register() {

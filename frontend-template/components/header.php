@@ -1,7 +1,30 @@
 <?php
+// 引入必要的类
+require_once dirname(__DIR__) . '/../Database.php';
+require_once dirname(__DIR__) . '/../VideoModel.php';
+
+// 启动会话
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // 获取父分类数据
 $videoModel = new VideoModel();
 $parentCategories = $videoModel->getParentCategories();
+
+// 检查用户登录状态
+$isLoggedIn = isset($_SESSION['user_id']) && $_SESSION['user_id'] > 0;
+$userInfo = null;
+
+if ($isLoggedIn) {
+    try {
+        $db = Database::getInstance();
+        $userInfo = $db->fetchOne("SELECT * FROM users WHERE id = ?", [$_SESSION['user_id']]);
+    } catch (Exception $e) {
+        error_log("获取用户信息失败: " . $e->getMessage());
+        $isLoggedIn = false;
+    }
+}
 ?>
 <style>
 /* 隐藏PC端搜索按钮 */
@@ -44,6 +67,43 @@ $parentCategories = $videoModel->getParentCategories();
 .gen-history-list {
     max-height: 80vh;
     overflow-y: auto;
+}
+
+/* 用户中心样式 */
+.user-center {
+    position: relative;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 8px;
+    padding: 10px 0;
+    min-width: 120px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+}
+
+.dropdown-item {
+    display: block;
+    padding: 8px 20px;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #667eea;
+    text-decoration: none;
+}
+
+.user-center:hover .user-dropdown {
+    display: block;
 }
 
 .play-catalog {
@@ -335,9 +395,22 @@ $parentCategories = $videoModel->getParentCategories();
         
         <!-- <div class="margin"><a class="content-center" href="/"><i class="fa ds-xiazai"></i><em>客户端</em></a></div> -->
         <div class="margin user-center" id="userCenter">
-            <a class="content-center" href="/user/login" id="loginBtn">
-                <i class="fa ds-yonghu"></i><em>登录</em>
-            </a>
+            <?php if ($isLoggedIn && $userInfo): ?>
+                <!-- 已登录状态 -->
+                <a class="content-center" href="/user" id="userBtn">
+                    <i class="fa ds-yonghu"></i>
+                    <em><?= htmlspecialchars(substr($userInfo['username'], 0, 10)) ?></em>
+                </a>
+                <div class="user-dropdown" style="display:none;">
+                    <a href="/user" class="dropdown-item">个人中心</a>
+                    <a href="javascript:void(0)" class="dropdown-item" onclick="logout()">退出登录</a>
+                </div>
+            <?php else: ?>
+                <!-- 未登录状态 -->
+                <a class="content-center" href="/user/login" id="loginBtn">
+                    <i class="fa ds-yonghu"></i><em>登录</em>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -847,13 +920,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        clearUserUI();
-                        window.location.reload();
+                        // 退出登录成功后重定向到首页
+                        window.location.href = '/';
                     }
                 })
                 .catch(error => {
-                    clearUserUI();
-                    window.location.reload();
+                    // 即使API调用失败，也重定向到首页
+                    console.error('退出登录失败:', error);
+                    window.location.href = '/';
                 });
         }
     }
