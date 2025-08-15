@@ -158,7 +158,7 @@ img{overflow:hidden;line-height:0;font-size:0}
 .cf:after{clear:both}
 .size{font-size:0}
 .division{padding:0 4px}
-.public-box{-webkit-box-shadow: 0 5px 20px 0 rgb(0 0 0 / 20%);box-shadow: 0 5px 20px 0 rgb(0 0 0 / 20%);padding:20px;  border-radius:12px}
+.public-box{-webkit-box-shadow: 0 5px 20px 0 rgb(0 0 0 / 20%);box-shadow: 0 5px 20px 0 rgb(0 0 0 / 20%);padding:20px;  border-radius:12px；margin:5px}
 .arrow{position:absolute;left:20px;top:-6px;-webkit-transform:rotate(-45deg);-ms-transform:rotate(-45deg);transform:rotate(-45deg);border-radius:0 1px 0 1px;width:12px;height:12px}
 .badge2{color:hsla(0,0%,100%,.87)!important;background-color:#ff5b5b;display:inline-block;padding:.25em .4em;font-size:75%;font-weight:700;line-height:1;text-align:center;white-space:nowrap;vertical-align:baseline;border-radius:.25rem}
 .badge2:hover{color:hsla(0,0%,100%,.87)!important;}

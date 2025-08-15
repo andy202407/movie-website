@@ -1,5 +1,5 @@
 <?php
-require_once '../controllers/UserController.php';
+require_once dirname(__DIR__) . '/controllers/UserController.php';
 
 // 设置CORS头
 header('Access-Control-Allow-Origin: *');
@@ -50,6 +50,14 @@ try {
             
         case 'update_watch_history':
             $controller->updateWatchHistory();
+            break;
+            
+        case 'clear_watch_history':
+            $controller->clearWatchHistory();
+            break;
+            
+        case 'remove_watch_history':
+            $controller->removeWatchHistory();
             break;
             
         case 'get_user_info':

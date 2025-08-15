@@ -21,8 +21,11 @@ function isSpider() {
     return false;
 }
 
-// 阻止蜘蛛访问
-if (isSpider()) {
+// 阻止蜘蛛访问（但允许API请求）
+$requestUri = $_SERVER['REQUEST_URI'];
+if (strpos($requestUri, '/api/') === 0) {
+    // API请求跳过蜘蛛检测
+} elseif (isSpider()) {
     http_response_code(403);
     echo "Access Denied";
     exit;
@@ -49,17 +52,31 @@ try {
     // 检查是否是API请求
     $requestUri = $_SERVER['REQUEST_URI'];
     $path = parse_url($requestUri, PHP_URL_PATH);
+    
+    // 处理API请求（支持带和不带.php后缀）
     if (strpos($path, '/api/') === 0) {
+        // 移除.php后缀（如果存在）
+        $cleanPath = str_replace('.php', '', $path);
+        
         // 处理用户API请求
-        if (strpos($path, '/api/user') === 0) {
+        if (strpos($cleanPath, '/api/user') === 0) {
+            // 设置正确的Content-Type
+            header('Content-Type: application/json; charset=utf-8');
             require_once 'api/user.php';
             exit;
         }
-        // 其他API请求
+        
+        // 处理其他API请求
         if (file_exists('api.php')) {
+            header('Content-Type: application/json; charset=utf-8');
             require_once 'api.php';
             exit;
         }
+        
+        // 如果API文件不存在，返回404
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'API接口不存在']);
+        exit;
     }
     
     // 初始化模板引擎

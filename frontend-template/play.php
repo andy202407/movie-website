@@ -2290,6 +2290,7 @@ html, body {
             // 播放结束
             player.on('ended', function() {
                 saveProgress();
+                saveWatchHistory(); // 保存观看记录到数据库
                 
                 // 播放完成后，可以选择删除进度记录或标记为已完成
                 try {
@@ -2305,9 +2306,10 @@ html, body {
                 autoPlayNextEpisode();
             });
             
-            // 页面关闭前保存进度
+            // 页面关闭前保存进度和观看记录
             window.addEventListener('beforeunload', function() {
                 saveProgress();
+                saveWatchHistory(); // 保存观看记录到数据库
                 
                 // 清理预热播放器
                 if (window.warmUpPlayer && window.warmUpPlayer.parentNode) {
@@ -2324,10 +2326,11 @@ html, body {
                 }
             });
             
-            // 页面隐藏时保存进度（移动端切换应用时）
+            // 页面隐藏时保存进度和观看记录（移动端切换应用时）
             document.addEventListener('visibilitychange', function() {
                 if (document.hidden) {
                     saveProgress();
+                    saveWatchHistory(); // 保存观看记录到数据库
                     
                     // 页面隐藏时取消自动播放
                     if (window.autoPlayTimer) {
@@ -2423,6 +2426,7 @@ html, body {
                     updatePlayPauseButton(false);
                     stopAudioVisualizer();
                     saveProgress();
+                    saveWatchHistory(); // 保存观看记录到数据库
                     autoPlayNextEpisode();
                 });
                 
@@ -3041,7 +3045,7 @@ html, body {
         }
     }
     
-    // 缓存管理函数
+    // 缓存管理函数 - 同时保存到本地存储和数据库
     function saveToHistory() {
         try {
             const historyData = {
@@ -3077,6 +3081,7 @@ html, body {
                 }
             }
             
+            // 保存到本地存储
             let history = JSON.parse(localStorage.getItem('video_watch_history') || '[]');
             
             // 移除重复记录
@@ -3102,10 +3107,107 @@ html, body {
                 timestamp: Date.now()
             }));
             
+            // 同时保存到数据库（如果用户已登录）
+            saveWatchHistory();
+            
             console.log('保存播放记录:', historyData); // 调试用
             
         } catch (e) {
             console.warn('保存历史记录失败:', e);
+        }
+    }
+    
+    // 保存观看记录到数据库
+    function saveWatchHistory() {
+        // 检查用户是否已登录（通过检查是否有用户会话）
+        if (!isUserLoggedIn()) {
+            console.log('用户未登录，跳过数据库保存');
+            return;
+        }
+        
+        try {
+            // 获取当前播放进度
+            let currentTime = 0;
+            let duration = 0;
+            
+            if (isAudioMode && audioPlayerReady) {
+                currentTime = Math.floor(audioPlayer.currentTime || 0);
+                duration = Math.floor(audioPlayer.duration || 0);
+            } else if (player && playerReady) {
+                currentTime = Math.floor(player.currentTime() || 0);
+                duration = Math.floor(player.duration() || 0);
+            }
+            
+            // 如果播放时间太短，不保存
+            if (currentTime < 5) {
+                console.log('播放时间太短，不保存观看记录');
+                return;
+            }
+            
+            // 准备数据
+            const formData = new FormData();
+            formData.append('video_id', <?= $video['id'] ?>);
+            formData.append('episode', <?= $currentEpisodeNumber ?? 1 ?>);
+            formData.append('progress', currentTime);
+            
+            // 发送到后端API
+            fetch('/api/user.php?action=update_watch_history', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('观看记录保存成功:', data);
+                } else {
+                    console.warn('观看记录保存失败:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('保存观看记录时网络错误:', error);
+            });
+            
+        } catch (error) {
+            console.error('保存观看记录失败:', error);
+        }
+    }
+    
+    // 检查用户是否已登录
+    function isUserLoggedIn() {
+        try {
+            // 方法1：检查页面中是否有用户信息元素（最可靠）
+            const userInfoElement = document.querySelector('.user-center .content-center em');
+            if (userInfoElement && userInfoElement.textContent !== '登录') {
+                return true;
+            }
+            
+            // 方法2：检查是否有用户下拉菜单
+            const userDropdown = document.querySelector('.user-dropdown');
+            if (userDropdown && userDropdown.style.display !== 'none') {
+                return true;
+            }
+            
+            // 方法3：检查页面中是否有用户名显示（非"登录"文本）
+            const usernameElements = document.querySelectorAll('em');
+            for (let element of usernameElements) {
+                if (element.textContent && element.textContent !== '登录' && element.textContent.length > 1) {
+                    return true;
+                }
+            }
+            
+            // 方法4：检查cookie中的用户token
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'user_token' && value && value !== '') {
+                    return true;
+                }
+            }
+            
+            return false;
+        } catch (error) {
+            console.warn('检查登录状态失败:', error);
+            return false;
         }
     }
     
@@ -4435,14 +4537,14 @@ html, body {
                 } else {
                     // 未登录，跳转到登录页
                     if (confirm('请先登录后再收藏，是否前往登录？')) {
-                        window.location.href = '/user/login.php';
+                        window.location.href = '/user/login';
                     }
                 }
             })
             .catch(error => {
                 // 网络错误，跳转到登录页
                 if (confirm('网络错误，是否前往登录页？')) {
-                    window.location.href = '/user/login.php';
+                    window.location.href = '/user/loginp';
                 }
             });
     }
@@ -4568,4 +4670,5 @@ html, body {
 </div>
 <?php include 'components/footer.php'; ?>
 </body>
+</html>
 </html>

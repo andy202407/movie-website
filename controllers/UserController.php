@@ -213,6 +213,47 @@ class UserController {
         $result = $this->userModel->updateWatchHistory($userId, $videoId, $episode, $progress);
         $this->jsonResponse($result);
     }
+
+    // 清除观看历史（单条）
+    public function removeWatchHistory() {
+        if (!$this->checkLogin()) {
+            $this->jsonResponse(['success' => false, 'message' => '请先登录']);
+            return;
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['success' => false, 'message' => '请求方法错误']);
+            return;
+        }
+        
+        $videoId = intval($_POST['video_id'] ?? 0);
+        
+        if ($videoId <= 0) {
+            $this->jsonResponse(['success' => false, 'message' => '视频ID无效']);
+            return;
+        }
+        
+        $userId = $_SESSION['user_id'];
+        $result = $this->userModel->removeWatchHistory($userId, $videoId);
+        $this->jsonResponse($result);
+    }
+
+    // 清除观看历史（全部）
+    public function clearWatchHistory() {
+        if (!$this->checkLogin()) {
+            $this->jsonResponse(['success' => false, 'message' => '请先登录']);
+            return;
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->jsonResponse(['success' => false, 'message' => '请求方法错误']);
+            return;
+        }
+        
+        $userId = $_SESSION['user_id'];
+        $result = $this->userModel->clearWatchHistory($userId);
+        $this->jsonResponse($result);
+    }
     
     // 获取用户信息
     public function getUserInfo() {

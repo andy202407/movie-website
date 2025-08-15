@@ -17,6 +17,11 @@
     <script>var maccms={"vod_mask":"mask-1","path2":"/","day":"2","jx":"0","so_off":"0","bt-style":"","login-login":"/","path":"","mid":"","aid":"1","url":"m.ql82.com ","wapurl":"m.ql82.com ","mob_status":"0"};</script>
     <script src="/template/yuyuyy/asset/js/ecscript.js"></script>
     <link rel="shortcut icon" href="/template/yuyuyy/asset/img/favicon.png" type="image/x-icon" />
+    <style>
+        .public-box{
+            margin: 5px;
+        }
+    </style>
 </head>
 <body class="theme2">
 <div class="gen-loading bj load-icon-on">

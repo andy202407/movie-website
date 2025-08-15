@@ -69,6 +69,25 @@ if ($isLoggedIn) {
     overflow-y: auto;
 }
 
+/* 云端记录链接样式 - 不激活状态 */
+.cloud-link {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.cloud-link:hover {
+    opacity: 1;
+}
+
+.cloud-link a {
+    color: #888;
+    text-decoration: none;
+}
+
+.cloud-link a:hover {
+    color: #667eea;
+}
+
 /* 用户中心样式 */
 .user-center {
     position: relative;
@@ -478,7 +497,7 @@ if ($isLoggedIn) {
     <div class="wap-head-z"></div>
     <div class="play-catalog flex around ft4 b">
         <span class="rel on" data-tab="local"><a href="javascript:">本地记录</a></span>
-        <span class="rel" data-tab="cloud"><a href="javascript:">云端记录</a></span>
+        <span class="cloud-link"><a href="/user/">云端记录</a></span>
     </div>
     <div class="top30 mask-1-box">
         <div class="locality-history history check" id="localTab">
@@ -883,12 +902,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         .user-menu-item a:hover {
                             color: #667eea;
                         }
-                        .user-center:hover .user-menu {
-                            display: block;
-                        }
                     `;
                     document.head.appendChild(style);
                 }
+                
+                // 添加点击事件来显示/隐藏用户菜单
+                loginBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const userMenu = document.getElementById('userMenu');
+                    if (userMenu) {
+                        const isVisible = userMenu.style.display === 'block';
+                        userMenu.style.display = isVisible ? 'none' : 'block';
+                    }
+                });
+                
+                // 点击其他地方时隐藏用户菜单
+                document.addEventListener('click', function(e) {
+                    if (!userCenter.contains(e.target)) {
+                        const userMenu = document.getElementById('userMenu');
+                        if (userMenu) {
+                            userMenu.style.display = 'none';
+                        }
+                    }
+                });
             }
         }
     }

@@ -84,16 +84,7 @@ $pageDescription = '星海影院会员注册页面，使用用户名和密码注
             z-index: 2;
         }
         
-        .register-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
-            border-radius: 24px 24px 0 0;
-        }
+
         
         .register-header {
             text-align: center;
@@ -454,6 +445,13 @@ $pageDescription = '星海影院会员注册页面，使用用户名和密码注
                 hasError = true;
             }
             
+            // 检测用户名是否包含手机号格式
+            const phonePattern = /1[3-9]\d{9}/;
+            if (phonePattern.test(username)) {
+                showError('username-error', '用户名不能包含手机号格式，请使用其他用户名');
+                hasError = true;
+            }
+            
 
             
             if (password.length < 6) {
@@ -477,6 +475,25 @@ $pageDescription = '星海影院会员注册页面，使用用户名和密码注
             
             // 提交注册
             submitRegister();
+        });
+        
+        // 用户名实时验证
+        document.getElementById('username').addEventListener('input', function() {
+            const username = this.value.trim();
+            const errorElement = document.getElementById('username-error');
+            const inputElement = this;
+            
+            // 清除之前的错误状态
+            errorElement.style.display = 'none';
+            inputElement.classList.remove('error');
+            
+            if (username.length > 0) {
+                // 检测是否包含手机号格式
+                const phonePattern = /1[3-9]\d{9}/;
+                if (phonePattern.test(username)) {
+                    showError('username-error', '用户名不能包含手机号格式，请使用其他用户名');
+                }
+            }
         });
         
         // 密码强度检测

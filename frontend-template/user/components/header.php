@@ -217,7 +217,7 @@ if ($isLoggedIn) {
       <?php if ($isLoggedIn && $userInfo): ?>
 
         <div class="dropdown" id="userDropdown">
-          <button class="user-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <button class="user-btn" type="button" aria-haspopup="true" aria-expanded="false" id="userBtn">
             <span class="avatar"><?= strtoupper(substr($userInfo['username'], 0, 1)) ?></span>
             <span class="meta">
               <span class="name"><?= htmlspecialchars(substr($userInfo['username'], 0, 16)) ?></span>
@@ -228,9 +228,9 @@ if ($isLoggedIn) {
             <a href="/user" role="menuitem">👤 会员中心</a>
             <a href="/user?tab=favorites" role="menuitem">⭐ 我的收藏</a>
             <a href="/user?tab=history" role="menuitem">📺 观看历史</a>
+            <a href="javascript:void(0)" onclick="logout()" role="menuitem">🚪 退出登录</a>
           </div>
         </div>
-        <button class="logout" type="button" onclick="logout()">退出</button>
       <?php else: ?>
         <div class="auth">
           <a href="/user/login" class="nav-link">登录</a>
@@ -269,5 +269,34 @@ if ($isLoggedIn) {
                     link.classList.add('active');
                 }
             });
+            
+            // 用户头像点击事件
+            const userBtn = document.getElementById('userBtn');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            if (userBtn && userDropdown) {
+                userBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const isExpanded = userBtn.getAttribute('aria-expanded') === 'true';
+                    
+                    // 切换菜单显示状态
+                    if (isExpanded) {
+                        userDropdown.classList.remove('open');
+                        userBtn.setAttribute('aria-expanded', 'false');
+                    } else {
+                        userDropdown.classList.add('open');
+                        userBtn.setAttribute('aria-expanded', 'true');
+                    }
+                });
+                
+                // 点击其他地方时隐藏菜单
+                document.addEventListener('click', function(e) {
+                    if (!userDropdown.contains(e.target)) {
+                        userDropdown.classList.remove('open');
+                        userBtn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
         });
     </script>

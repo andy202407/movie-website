@@ -124,16 +124,28 @@ class UserModel {
         try {
             $offset = ($page - 1) * $limit;
             
+            // 使用LIMIT offset, count语法避免PDO参数绑定问题
             $stmt = $this->db->prepare("
-                SELECT f.*, v.title, v.poster, v.status, v.actor, v.director, v.year, v.region 
+                SELECT f.*, v.title, v.cover_path as poster, v.status, v.actor, v.director, v.year, v.region 
                 FROM user_favorites f 
                 LEFT JOIN videos v ON f.video_id = v.id 
                 WHERE f.user_id = ? 
                 ORDER BY f.created_at DESC 
-                LIMIT ? OFFSET ?
+                LIMIT {$offset}, {$limit}
             ");
-            $stmt->execute([$userId, $limit, $offset]);
+            $stmt->execute([$userId]);
             $favorites = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // 处理图片路径：将 /public/uploads/ 转换为 /uploads/
+            foreach ($favorites as &$item) {
+                if (!empty($item['poster'])) {
+                    $item['poster'] = str_replace('/public/', '/', $item['poster']);
+                    // 确保路径以/开头
+                    if (strpos($item['poster'], '/') !== 0) {
+                        $item['poster'] = '/' . $item['poster'];
+                    }
+                }
+            }
             
             // 获取总数
             $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM user_favorites WHERE user_id = ?");
@@ -158,16 +170,28 @@ class UserModel {
         try {
             $offset = ($page - 1) * $limit;
             
+            // 使用LIMIT offset, count语法避免PDO参数绑定问题
             $stmt = $this->db->prepare("
-                SELECT h.*, v.title, v.poster, v.status 
+                SELECT h.*, v.title, v.cover_path as poster, v.status 
                 FROM user_watch_history h 
                 LEFT JOIN videos v ON h.video_id = v.id 
                 WHERE h.user_id = ? 
                 ORDER BY h.last_watched DESC 
-                LIMIT ? OFFSET ?
+                LIMIT {$offset}, {$limit}
             ");
-            $stmt->execute([$userId, $limit, $offset]);
+            $stmt->execute([$userId]);
             $history = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // 处理图片路径：将 /public/uploads/ 转换为 /uploads/
+            foreach ($history as &$item) {
+                if (!empty($item['poster'])) {
+                    $item['poster'] = str_replace('/public/', '/', $item['poster']);
+                    // 确保路径以/开头
+                    if (strpos($item['poster'], '/') !== 0) {
+                        $item['poster'] = '/' . $item['poster'];
+                    }
+                }
+            }
             
             // 获取总数
             $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM user_watch_history WHERE user_id = ?");
@@ -213,6 +237,38 @@ class UserModel {
             }
             
             return ['success' => true];
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => '系统错误：' . $e->getMessage()];
+        }
+    }
+
+    // 移除单条观看历史
+    public function removeWatchHistory($userId, $videoId) {
+        try {
+            $stmt = $this->db->prepare("DELETE FROM user_watch_history WHERE user_id = ? AND video_id = ?");
+            $result = $stmt->execute([$userId, $videoId]);
+            
+            if ($result) {
+                return ['success' => true, 'message' => '观看记录已删除'];
+            } else {
+                return ['success' => false, 'message' => '删除失败'];
+            }
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => '系统错误：' . $e->getMessage()];
+        }
+    }
+
+    // 清除所有观看历史
+    public function clearWatchHistory($userId) {
+        try {
+            $stmt = $this->db->prepare("DELETE FROM user_watch_history WHERE user_id = ?");
+            $result = $stmt->execute([$userId]);
+            
+            if ($result) {
+                return ['success' => true, 'message' => '所有观看记录已清除'];
+            } else {
+                return ['success' => false, 'message' => '清除失败'];
+            }
         } catch (Exception $e) {
             return ['success' => false, 'message' => '系统错误：' . $e->getMessage()];
         }
