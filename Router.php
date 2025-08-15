@@ -486,9 +486,4 @@ class Router {
         include 'frontend-template/user/login.php';
         exit;
     }
-    
-    // 添加escape方法，让模板可以安全输出
-    public function escape($string) {
-        return $this->templateEngine->escape($string);
-    }
 }

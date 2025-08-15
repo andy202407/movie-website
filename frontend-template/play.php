@@ -2168,7 +2168,6 @@ html, body {
                     
                     // 启动播放记录保存
                     startHistorySaving();
-                    
                     // 确保时间显示元素存在
                     const currentTime = player.controlBar.getChild('currentTimeDisplay');
                     const duration = player.controlBar.getChild('durationDisplay');
@@ -4259,7 +4258,6 @@ html, body {
             }
         }, 30000);
     }
-    
     // 启用后台/锁屏播放模式（Media Session）
     function enableBackgroundAudioMode() {
         // 让控制中心/锁屏显示标题封面并控制播放
