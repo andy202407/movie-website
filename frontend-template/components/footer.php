@@ -2,7 +2,7 @@
 <div class="top-back">
     <a class="lang-bnt fa box" data-id="1" href="javascript:">繁</a>
     <script src="/template/yuyuyy/asset/js/zh.js"></script>
-    <a class="theme-style fa box" data-id="2" href="javascript:">&#xe575;</a>
+    <!-- <a class="theme-style fa box" data-id="2" href="javascript:">&#xe575;</a> -->
     <a class="bj2 top fa ds-jiantoushang" href="javascript:"></a>
 </div>
 
