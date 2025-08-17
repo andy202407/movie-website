@@ -95,7 +95,7 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
 <meta property="og:video:tag" content="动画"/>
 <meta property="og:video:tag" content="奇幻"/>
 <meta property="og:site_name" content="星海影院"/>
-<meta property="og:url" content="https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html"/>
+<meta property="og:url" content="https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html"/>
 <meta property="og:image" content="<?= $this->escape($video['poster']) ?>"/>
 <meta property="og:image:alt" content="<?= $this->escape($video['title']) ?>"/>
 <meta property="og:locale" content="zh_CN"/>
@@ -105,7 +105,7 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
 <meta name="twitter:description" content="<?= $this->escape($video['description']) ?>"/>
 <meta property="twitter:image" content="<?= $this->escape($video['poster']) ?>"/>
 <meta name="robots" content="index,follow" />
-<link rel="canonical" href="https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html" />
+<link rel="canonical" href="https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html" />
 <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -139,9 +139,9 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
               ,              "奇幻"
                           ],
             "caption": "带字幕",
-            "@id": "https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
-            "url": "https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
-            "embedUrl": "https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
+            "@id": "https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
+            "url": "https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
+            "embedUrl": "https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
             "aggregateRating": {
               "@type": "AggregateRating",
               "ratingValue": "<?= $this->escape($video['rating']) ?>",
@@ -159,8 +159,8 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
               }
                           ],
             "name": "免费在线看 <?= $this->escape($video['title']) ?> - 动漫在线观看 - 星海影院",
-            "@id": "https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
-            "url": "https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
+            "@id": "https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
+            "url": "https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
             "description": "<?= $this->escape($video['description']) ?>",
             "image": "<?= $this->escape($video['poster']) ?>",
                         "numberOfEpisodes": "12",
@@ -176,16 +176,16 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
                   "@type": "ListItem",
                   "position": 1,
                   "item": {
-                    "@id": "https://m.ql82.com /",
+                    "@id": "https://m.ql83.com /",
                     "name": "星海影院",
-                    "image": "https://m.ql82.com /static/images/logo.png"
+                    "image": "https://m.ql83.com /static/images/logo.png"
                   }
                 },
                 {
                   "@type": "ListItem",
                   "position": 2,
                   "item": {
-                    "@id": "https://m.ql82.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
+                    "@id": "https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html",
                     "name": "<?= $this->escape($video['title']) ?>",
                     "image": "<?= $this->escape($video['poster']) ?>"
                   }
@@ -198,7 +198,7 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
 <script src="/template/yuyuyy/asset/js/jquery.js"></script>
 <script src="/template/yuyuyy/asset/js/assembly.js"></script>
 <script src="/template/yuyuyy/asset/js/swiper.min.js"></script>
-<script>var maccms={"vod_mask":"mask-1","path2":"/","day":"2","jx":"0","so_off":"0","bt-style":"","login-login":"/","path":"","mid":"1","aid":"15","url":"m.ql82.com ","wapurl":"m.ql82.com ","mob_status":"0"};</script>
+<script>var maccms={"vod_mask":"mask-1","path2":"/","day":"2","jx":"0","so_off":"0","bt-style":"","login-login":"/","path":"","mid":"1","aid":"15","url":"m.ql83.com ","wapurl":"m.ql83.com ","mob_status":"0"};</script>
 <script src="/template/yuyuyy/asset/js/ecscript.js"></script>
 <script>new WOW().init();</script><meta name="format-detection" content="telephone=no" />
 <meta name="renderer" content="webkit" />
@@ -1852,7 +1852,7 @@ html, body {
                                         </div>
                                         <div style="margin-left:20px">
                                             <span class="share-tips">分享给好友吧~</span>
-                                            <span id="bar" class="share-url bj">https://m.ql82.com /?page=play&id=<?= $video['id'] ?></span>
+                                            <span id="bar" class="share-url bj">https://m.ql83.com /?page=play&id=<?= $video['id'] ?></span>
                                             <button type="button" class="share-copy bj2 ho radius copyBtn" data-clipboard-action="copy" data-clipboard-target="#bar">复制链接</button>
                                         </div>
                                     </div>
@@ -3795,7 +3795,7 @@ html, body {
                 }
                 
                 // 不添加域名，让nginx处理路径映射（与PHP逻辑保持一致）
-                // videoUrl = 'https://m.ql82.com' + videoUrl;
+                // videoUrl = 'https://m.ql83.com' + videoUrl;
             }
             
             // 检查是否为音频文件

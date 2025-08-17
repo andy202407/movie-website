@@ -1,0 +1,95 @@
+# PHP项目Git忽略文件
+
+# 缓存目录
+cache/
+cache/*
+!cache/.gitkeep
+
+# 日志文件
+*.log
+logs/
+log/
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+*.temp
+
+# 上传文件
+uploads/
+upload/
+public/uploads/
+
+# 配置文件（包含敏感信息）
+config.php
+database.php
+.env
+.env.local
+.env.production
+.env.staging
+
+# 依赖目录
+vendor/
+node_modules/
+bower_components/
+
+# IDE和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 编译文件
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# 压缩包
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# 数据库文件
+*.sql
+*.sqlite
+*.db
+
+# 备份文件
+*.bak
+*.backup
+*.old
+*.orig
+
+# 会话文件
+sessions/
+sess_*
+
+# 错误页面
+error_log
+error_log.*
+
+# 系统文件
+.htaccess
+.htpasswd
+
+# 测试覆盖率报告
+coverage/
+htmlcov/
+.coverage
+
+# 其他
+*.pid
+*.seed
+*.pid.lock

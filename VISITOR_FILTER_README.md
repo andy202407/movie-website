@@ -7,7 +7,7 @@
 ## 主要特性
 
 ### 1. 精确域名过滤
-- 自动排除来自 `m.ql82.com` 的访问
+- 自动排除来自 `m.ql83.com` 的访问
 - **重要**：使用精确匹配，不会影响其他子域名（如 `aa.ql82.com`、`bb.ql82.com` 等）
 - 通过检查 HTTP 请求头中的 `Referer`、`Host` 和 `Origin` 来识别来源
 - 支持配置多个排除域名
@@ -28,7 +28,7 @@
 ```php
 // 被排除的域名列表（精确匹配）
 $EXCLUDED_DOMAINS = [
-    'm.ql82.com',        // 只排除 m.ql82.com
+    'm.ql83.com',        // 只排除 m.ql83.com
     // 可以添加更多特定域名
     // 例如: 'admin.ql82.com'
     // 例如: 'test.ql82.com'
@@ -48,7 +48,7 @@ $ENABLE_USER_AGENT_FILTER = true;  // User-Agent过滤
 
 ```php
 $EXCLUDED_DOMAINS = [
-    'm.ql82.com',        // 排除 m.ql82.com
+    'm.ql83.com',        // 排除 m.ql83.com
     'admin.ql82.com',    // 排除 admin.ql82.com
     'test.ql82.com',     // 排除 test.ql82.com
     // 注意：这些是精确匹配，不会影响其他子域名
@@ -77,7 +77,7 @@ $EXCLUDED_IP_RANGES = [
 ## 域名匹配规则
 
 ### 精确匹配
-- `m.ql82.com` → 只排除 `m.ql82.com`
+- `m.ql83.com` → 只排除 `m.ql83.com`
 - `admin.ql82.com` → 只排除 `admin.ql82.com`
 - `test.ql82.com` → 只排除 `test.ql82.com`
 
@@ -95,10 +95,10 @@ $EXCLUDED_IP_RANGES = [
 <?php
 require_once 'visitor_helper.php';
 
-// 模拟来自 m.ql82.com 的访问
-$_SERVER['HTTP_REFERER'] = 'https://m.ql82.com/some-page';
+// 模拟来自 m.ql83.com 的访问
+$_SERVER['HTTP_REFERER'] = 'https://m.ql83.com/some-page';
 $shouldExclude = shouldExcludeVisit();
-echo "m.ql82.com 访问: " . ($shouldExclude ? "已排除" : "未排除") . "\n";
+echo "m.ql83.com 访问: " . ($shouldExclude ? "已排除" : "未排除") . "\n";
 
 // 模拟来自 aa.ql82.com 的访问
 $_SERVER['HTTP_REFERER'] = 'https://aa.ql82.com/another-page';

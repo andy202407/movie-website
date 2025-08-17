@@ -6,10 +6,12 @@ class Router {
     private $routes = [];
     private $templateEngine;
     private $videoModel;
+    private $cacheManager;
     
-    public function __construct($templateEngine, $videoModel) {
+    public function __construct($templateEngine, $videoModel, $cacheManager = null) {
         $this->templateEngine = $templateEngine;
         $this->videoModel = $videoModel;
+        $this->cacheManager = $cacheManager;
         $this->setupRoutes();
     }
     
@@ -170,7 +172,22 @@ class Router {
             'current_page' => 'home'
         ]);
         
-        $this->templateEngine->display('home');
+        // 渲染页面内容
+        $content = $this->templateEngine->render('home');
+        
+        // 如果启用了缓存，保存到缓存
+        if ($this->cacheManager && $this->cacheManager->shouldCache()) {
+            $requestUri = $_SERVER['REQUEST_URI'];
+            $result = $this->cacheManager->set($requestUri, $content, $_GET);
+            if ($result) {
+                error_log("缓存已保存: {$requestUri}");
+            } else {
+                error_log("缓存保存失败: {$requestUri}");
+            }
+        }
+        
+        // 输出内容
+        echo $content;
     }
     
     private function video() {
@@ -201,7 +218,16 @@ class Router {
             'current_page' => 'video'
         ]);
         
-        $this->templateEngine->display('video');
+        // 渲染页面内容
+        $content = $this->templateEngine->render('video');
+        
+        // 如果启用了缓存，保存到缓存
+        if ($this->cacheManager && $this->cacheManager->shouldCache()) {
+            $this->cacheManager->set($_SERVER['REQUEST_URI'], $content, $_GET);
+        }
+        
+        // 输出内容
+        echo $content;
     }
     
     private function play() {
@@ -239,7 +265,16 @@ class Router {
             'current_page' => 'play'
         ]);
         
-        $this->templateEngine->display('play');
+        // 渲染页面内容
+        $content = $this->templateEngine->render('play');
+        
+        // 如果启用了缓存，保存到缓存
+        if ($this->cacheManager && $this->cacheManager->shouldCache()) {
+            $this->cacheManager->set($_SERVER['REQUEST_URI'], $content, $_GET);
+        }
+        
+        // 输出内容
+        echo $content;
     }
     
     private function category() {
@@ -267,7 +302,16 @@ class Router {
             'current_page' => 'category'
         ]);
         
-        $this->templateEngine->display('category');
+        // 渲染页面内容
+        $content = $this->templateEngine->render('category');
+        
+        // 如果启用了缓存，保存到缓存
+        if ($this->cacheManager && $this->cacheManager->shouldCache()) {
+            $this->cacheManager->set($_SERVER['REQUEST_URI'], $content, $_GET);
+        }
+        
+        // 输出内容
+        echo $content;
     }
     
 
@@ -436,7 +480,16 @@ class Router {
             'availableFilterCategories' => $availableFilterCategories
         ]);
         
-        $this->templateEngine->display('list');
+        // 渲染页面内容
+        $content = $this->templateEngine->render('list');
+        
+        // 如果启用了缓存，保存到缓存
+        if ($this->cacheManager && $this->cacheManager->shouldCache()) {
+            $this->cacheManager->set($_SERVER['REQUEST_URI'], $content, $_GET);
+        }
+        
+        // 输出内容
+        echo $content;
     }
     
     private function search() {
@@ -461,7 +514,16 @@ class Router {
             'current_page' => 'search'
         ]);
         
-        $this->templateEngine->display('search');
+        // 渲染页面内容
+        $content = $this->templateEngine->render('search');
+        
+        // 如果启用了缓存，保存到缓存
+        if ($this->cacheManager && $this->cacheManager->shouldCache()) {
+            $this->cacheManager->set($_SERVER['REQUEST_URI'], $content, $_GET);
+        }
+        
+        // 输出内容
+        echo $content;
     }
     
     private function user() {

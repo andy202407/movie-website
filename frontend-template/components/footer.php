@@ -9,7 +9,7 @@
 <footer class="footer box top40 wap-hide">
     <p class="this-link"><a href="/" target="_blank">问题反馈</a><a href="/" target="_blank">网站地图</a></p>
     <p class="cor5">本站所有资源信息均从互联网搜索而来，本站不对显示的内容承担责任，如您认为本站页面信息侵犯了您的权益，请附上版权证明邮件告知，在收到邮件后48小时内删除</p>
-    <p class="cor5">Copyright &copy;&nbsp;2021~2025&nbsp;<a href="/">m.ql82.com </a>&nbsp;All rights reservd.</p>
+    <p class="cor5">Copyright &copy;&nbsp;2021~2025&nbsp;<a href="/">m.ql83.com </a>&nbsp;All rights reservd.</p>
     <p class="none"></p>
 </footer>
 

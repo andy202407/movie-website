@@ -37,6 +37,7 @@ require_once 'Database.php';
 require_once 'VideoModel.php';
 require_once 'Router.php';
 require_once 'visitor_helper.php';
+require_once 'CacheManager.php';
 
 // 错误处理
 error_reporting(E_ALL);
@@ -79,6 +80,24 @@ try {
         exit;
     }
     
+    // 初始化缓存管理器
+    $cacheManager = new CacheManager();
+    
+    // 检查是否应该使用缓存
+    if ($cacheManager->shouldCache()) {
+        $requestUri = $_SERVER['REQUEST_URI'];
+        $cachedContent = $cacheManager->get($requestUri, $_GET);
+        
+        if ($cachedContent !== false) {
+            // 输出缓存内容并记录日志
+            error_log("缓存命中: {$requestUri}");
+            echo $cachedContent;
+            exit;
+        } else {
+            error_log("缓存未命中: {$requestUri}");
+        }
+    }
+    
     // 初始化模板引擎
     $templateEngine = new TemplateEngine('frontend-template');
     
@@ -86,7 +105,7 @@ try {
     $videoModel = new VideoModel();
     
     // 初始化路由器
-    $router = new Router($templateEngine, $videoModel);
+    $router = new Router($templateEngine, $videoModel, $cacheManager);
     
     // 执行路由
     $router->route();
