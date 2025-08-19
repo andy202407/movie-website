@@ -1179,22 +1179,22 @@ if ($isLoggedIn) {
         </div>
         <div class="header-actions">
             <!-- PC端搜索框 -->
-            <div class="this-search">
-                <form id="search2" name="search" class="flex-public" method="get" action="/search">
-                    <a href="javascript:" data-id="1" class="this-select">视频<i class="fa">&#xe563;</i></a>
-                    <input type="text" name="wd" class="this-input flex-auto cor4" value="<?= $this->escape($_GET['wd'] ?? '') ?>" placeholder="搜索影片..." autocomplete="off">
-                    <div class="flex">
+        <div class="this-search">
+            <form id="search2" name="search" class="flex-public" method="get" action="/search">
+                <a href="javascript:" data-id="1" class="this-select">视频<i class="fa">&#xe563;</i></a>
+                <input type="text" name="wd" class="this-input flex-auto cor4" value="<?= $this->escape($_GET['wd'] ?? '') ?>" placeholder="搜索影片..." autocomplete="off">
+                <div class="flex">
                         <a class="this-hot" href="/label/rank.html"><em class="fa ds-pahang2 r3"></em>排行榜</a>
-                        <button type="submit" class="fa ds-sousuo ol2"></button>
-                    </div>
-                </form>
-            </div>
+                    <button type="submit" class="fa ds-sousuo ol2"></button>
+                </div>
+            </form>
+                </div>
             <div class="action-buttons">
                 <div class="mobile-search" title="搜索" id="mobileSearchBtn">
                     <a href="javascript:void(0)">
-                        <i class="fa ds-sousuo"></i>
-                    </a>
-                </div>
+                <i class="fa ds-sousuo"></i>
+            </a>
+        </div>
                 <div class="gen-history" title="播放记录">
                     <a href="javascript:">
                 <i class="fa ds-lishijilu"></i>
@@ -1422,7 +1422,7 @@ function showScrollHint() {
         if (historyBtn && historyPopup && historyBg) {
             historyBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                historyPopup.style.display = 'block';
+            historyPopup.style.display = 'block';
                 historyBg.style.display = 'block';
             });
         }

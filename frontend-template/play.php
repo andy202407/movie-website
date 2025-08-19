@@ -82,7 +82,7 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
     <meta name="theme-color" content="#1a1a1a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>免费在线看 <?= $this->escape($video['title']) ?><?= ($hasEpisodes && $currentEpisode) ? ' ' . $this->escape($currentEpisode['title']) : '' ?> - 动漫在线观看 - 星海影院</title>
+    <title>免费在线看 <?= $this->escape($video['title']) ?><?= ($hasEpisodes && $currentEpisode) ? ' 第' . ($currentEpisodeNumber ?? 1) . '集' : '' ?> - 动漫在线观看 - 星海影院</title>
 <meta name="keywords" content="<?= $this->escape($video['title'] ?? '') ?>,<?= $this->escape($video['title'] ?? '') ?>在线观看,动漫,星海影院,冒险,动画,奇幻,<?= $this->escape($video['title'] ?? '') ?>免费在线观看,<?= $this->escape($video['title'] ?? '') ?>免费看,<?= $this->escape($video['title'] ?? '') ?>在线免费播放,<?= $this->escape($video['title'] ?? '') ?>高清在线观看,<?= $this->escape($video['title'] ?? '') ?>无广告播放,<?= $this->escape($video['title'] ?? '') ?>手机在线看,<?= $this->escape($video['title'] ?? '') ?>分集在线观看,<?= $this->escape($video['title'] ?? '') ?>全集免费看" />
 <meta name="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 星海影院。<?= $this->escape($video['description'] ?? '') ?>。星海影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
 <meta itemProp="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 星海影院。<?= $this->escape($video['description'] ?? '') ?>。星海影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
@@ -1719,7 +1719,7 @@ html, body {
                     </div>
                     
                     <div class="audio-info">
-                        <div class="audio-title" id="audioTitle"><?= $this->escape($video['title']) ?> 第<?= $currentEpisodeNumber ?? 1 ?>集</div>
+                        <div class="audio-title" id="audioTitle"><?= $this->escape($video['title']) ?><?= $hasEpisodes ? ' 第' . ($currentEpisodeNumber ?? 1) . '集' : '' ?></div>
                         <!-- <div class="audio-artist" id="audioArtist">星海影院</div> -->
                         <div class="audio-album" id="audioAlbum">音频播放</div>
                     </div>
@@ -2086,7 +2086,9 @@ html, body {
             const titleElement = document.querySelector('.player-title-link');
             if (titleElement) {
                 const originalTitle = titleElement.textContent;
-                if (!originalTitle.includes(`第${currentEpisode}集`)) {
+                // 只有多集时才显示集数
+                const hasMultipleEpisodes = <?= $hasEpisodes ? 'true' : 'false' ?>;
+                if (hasMultipleEpisodes && !originalTitle.includes(`第${currentEpisode}集`)) {
                     titleElement.textContent = `${originalTitle} 第${currentEpisode}集`;
                 }
             }
@@ -2488,8 +2490,14 @@ html, body {
         if (audioTitle) {
             // 获取当前剧集号，如果没有传入参数则使用默认值
             const currentEpisode = episodeNumber || <?= $currentEpisodeNumber ?? 1 ?>;
-            // 显示格式：视频标题 第X集
-            const titleText = (videoTitle || '未知音频') + ' 第' + currentEpisode + '集';
+            // 只有多集时才显示集数
+            const hasMultipleEpisodes = <?= $hasEpisodes ? 'true' : 'false' ?>;
+            let titleText;
+            if (hasMultipleEpisodes) {
+                titleText = (videoTitle || '未知音频') + ' 第' + currentEpisode + '集';
+            } else {
+                titleText = (videoTitle || '未知音频');
+            }
             audioTitle.textContent = titleText;
         }
         
@@ -4046,11 +4054,22 @@ html, body {
         const titleElement = document.querySelector('.player-title-link');
         if (titleElement) {
             const baseTitle = "<?= $this->escape($video['title']) ?>";
-            titleElement.textContent = `${baseTitle} 第${episodeNumber}集`;
+            // 只有多集时才显示集数
+            const hasMultipleEpisodes = <?= $hasEpisodes ? 'true' : 'false' ?>;
+            if (hasMultipleEpisodes) {
+                titleElement.textContent = `${baseTitle} 第${episodeNumber}集`;
+            } else {
+                titleElement.textContent = baseTitle;
+            }
         }
         
         // 更新浏览器标题
-        document.title = `免费在线看 ${"<?= $this->escape($video['title']) ?>"} 第${episodeNumber}集 - 动漫在线观看 - 星海影院`;
+        const hasMultipleEpisodes = <?= $hasEpisodes ? 'true' : 'false' ?>;
+        if (hasMultipleEpisodes) {
+            document.title = `免费在线看 ${"<?= $this->escape($video['title']) ?>"} 第${episodeNumber}集 - 动漫在线观看 - 星海影院`;
+        } else {
+            document.title = `免费在线看 ${"<?= $this->escape($video['title']) ?>"} - 动漫在线观看 - 星海影院`;
+        }
     }
     
     // 更新剧集列表高亮和播放按钮
@@ -4275,7 +4294,13 @@ html, body {
         const episodeDisplay = document.querySelector('.player-title-link');
         if (episodeDisplay) {
             const baseTitle = "<?= $this->escape($video['title']) ?>";
-            episodeDisplay.textContent = `${baseTitle} 第${episodeNumber}集`;
+            // 只有多集时才显示集数
+            const hasMultipleEpisodes = <?= $hasEpisodes ? 'true' : 'false' ?>;
+            if (hasMultipleEpisodes) {
+                episodeDisplay.textContent = `${baseTitle} 第${episodeNumber}集`;
+            } else {
+                episodeDisplay.textContent = baseTitle;
+            }
         }
     }
     
