@@ -66,7 +66,7 @@ $stats = $cacheManager->getStats();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>缓存状态 - 星河影院</title>
+    <title>缓存状态 - 星海影院</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
         .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -84,7 +84,7 @@ $stats = $cacheManager->getStats();
     <div class="container">
         <div class="header">
             <h1>缓存状态</h1>
-            <p>星河影院 - 24小时自动过期缓存</p>
+            <p>星海影院 - 24小时自动过期缓存</p>
         </div>
 
         <?php if (!empty($message)): ?>

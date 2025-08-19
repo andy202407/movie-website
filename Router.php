@@ -163,7 +163,7 @@ class Router {
         }
         
         $this->templateEngine->assignArray([
-            'title' => '星河影院 - 免费在线观看高清电影电视剧综艺动漫',
+            'title' => '星海影院 - 免费在线观看高清电影电视剧综艺动漫',
             'parentCategoryVideos' => $parentCategoryVideos,
             'categories' => $categories,
             'categoryMap' => $categoryMap,
@@ -198,7 +198,7 @@ class Router {
             header('HTTP/1.0 404 Not Found');
             $categories = $this->videoModel->getAllCategories();
             $this->templateEngine->assignArray([
-                'title' => '页面不存在 - 星河影院',
+                'title' => '页面不存在 - 星海影院',
                 'categories' => $categories
             ]);
             $this->templateEngine->display('404');
@@ -210,7 +210,7 @@ class Router {
         $recommended = $this->videoModel->getRecommendedVideos(4);
         
         $this->templateEngine->assignArray([
-            'title' => $video['title'] . ' - 星河影院',
+            'title' => $video['title'] . ' - 星海影院',
             'video' => $video,
             'category' => $category,
             'categories' => $categories,
@@ -237,7 +237,7 @@ class Router {
         if (!$video) {
             header('HTTP/1.0 404 Not Found');
             $this->templateEngine->assignArray([
-                'title' => '页面不存在 - 星河影院',
+                'title' => '页面不存在 - 星海影院',
                 'categories' => $this->videoModel->getAllCategories()
             ]);
             $this->templateEngine->display('404');
@@ -258,7 +258,7 @@ class Router {
         $categories = $this->videoModel->getAllCategories();
         
         $this->templateEngine->assignArray([
-            'title' => '免费在线看 ' . $video['title'] . ' - 动漫在线观看 - 星河影院',
+            'title' => '免费在线看 ' . $video['title'] . ' - 动漫在线观看 - 星海影院',
             'video' => $video,
             'category' => $mainCategory,
             'categories' => $categories,
@@ -285,7 +285,7 @@ class Router {
         if (!$category) {
             header('HTTP/1.0 404 Not Found');
             $this->templateEngine->assignArray([
-                'title' => '页面不存在 - 星河影院',
+                'title' => '页面不存在 - 星海影院',
                 'categories' => $categories
             ]);
             $this->templateEngine->display('404');
@@ -295,7 +295,7 @@ class Router {
         $videos = $this->videoModel->getVideosByCategory($categoryId);
         
         $this->templateEngine->assignArray([
-            'title' => $category['name'] . ' - 星河影院',
+            'title' => $category['name'] . ' - 星海影院',
             'category' => $category,
             'videos' => $videos,
             'categories' => $categories,
@@ -333,7 +333,7 @@ class Router {
         if (!$category) {
             header('HTTP/1.0 404 Not Found');
             $this->templateEngine->assignArray([
-                'title' => '页面不存在 - 星河影院',
+                'title' => '页面不存在 - 星海影院',
                 'categories' => $categories
             ]);
             $this->templateEngine->display('404');
@@ -460,7 +460,7 @@ class Router {
         sort($availableFilterCategories);
         
         $this->templateEngine->assignArray([
-            'title' => $category['name'] . ' - 第' . $page . '页 - 星河影院',
+            'title' => $category['name'] . ' - 第' . $page . '页 - 星海影院',
             'category' => $category,
             'categories' => $categories,
             'categoryMap' => $categoryMap,
@@ -503,7 +503,7 @@ class Router {
         $categories = $this->videoModel->getAllCategories();
         $latestVideos = $this->videoModel->getLatestVideos(5); // 获取最新5部影片
         
-        $title = $keyword ? '搜索: ' . $keyword . ' - 星河影院' : '搜索影片 - 星河影院';
+        $title = $keyword ? '搜索: ' . $keyword . ' - 星海影院' : '搜索影片 - 星海影院';
         
         $this->templateEngine->assignArray([
             'title' => $title,

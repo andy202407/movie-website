@@ -24,7 +24,7 @@ if ($keyword) {
 
 $categories = $videoModel->getAllCategories();
 
-$title = $keyword ? '搜索: ' . $keyword . ' - 星河影院' : '搜索影片 - 星河影院';
+$title = $keyword ? '搜索: ' . $keyword . ' - 星海影院' : '搜索影片 - 星海影院';
 
 // 分配变量到模板
 $templateEngine->assignArray([
