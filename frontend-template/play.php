@@ -89,31 +89,31 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
     <!-- 预加载关键资源 -->
     <link rel="preload" href="https://vjs.zencdn.net/8.10.0/video.min.js" as="script" />
     <link rel="preload" href="https://vjs.zencdn.net/8.10.0/video-js.css" as="style" />
-    <title>免费在线看 <?= $this->escape($video['title']) ?><?= ($hasEpisodes && $currentEpisode) ? ' 第' . ($currentEpisodeNumber ?? 1) . '集' : '' ?> - 动漫在线观看 - 星海影院</title>
-<meta name="keywords" content="<?= $this->escape($video['title'] ?? '') ?>,<?= $this->escape($video['title'] ?? '') ?>在线观看,动漫,星海影院,冒险,动画,奇幻,<?= $this->escape($video['title'] ?? '') ?>免费在线观看,<?= $this->escape($video['title'] ?? '') ?>免费看,<?= $this->escape($video['title'] ?? '') ?>在线免费播放,<?= $this->escape($video['title'] ?? '') ?>高清在线观看,<?= $this->escape($video['title'] ?? '') ?>无广告播放,<?= $this->escape($video['title'] ?? '') ?>手机在线看,<?= $this->escape($video['title'] ?? '') ?>分集在线观看,<?= $this->escape($video['title'] ?? '') ?>全集免费看" />
-<meta name="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 星海影院。<?= $this->escape($video['description'] ?? '') ?>。星海影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
-<meta itemProp="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 星海影院。<?= $this->escape($video['description'] ?? '') ?>。星海影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
-<meta property="og:title" content="<?= $this->escape($video['title']) ?>"/>
-<meta property="og:description" content="<?= $this->escape($video['description']) ?>"/>
-<meta property="og:type" content="video.episode"/>
-<meta property="og:video:release_date" content="<?= $this->escape($video['year']) ?>-05-02" />
-<meta property="og:video:tag" content="中国大陆"/>
-<meta property="og:video:tag" content="冒险"/>
-<meta property="og:video:tag" content="动画"/>
-<meta property="og:video:tag" content="奇幻"/>
-<meta property="og:site_name" content="星海影院"/>
-<meta property="og:url" content="https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html"/>
-<meta property="og:image" content="<?= $this->escape($video['poster']) ?>"/>
-<meta property="og:image:alt" content="<?= $this->escape($video['title']) ?>"/>
-<meta property="og:locale" content="zh_CN"/>
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:site" content="星海影院"/>
-<meta property="twitter:title" content="<?= $this->escape($video['title']) ?>"/>
-<meta name="twitter:description" content="<?= $this->escape($video['description']) ?>"/>
-<meta property="twitter:image" content="<?= $this->escape($video['poster']) ?>"/>
-<meta name="robots" content="index,follow" />
-<link rel="canonical" href="https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html" />
-<script type="application/ld+json">
+    <title><?= $this->escape($video['title']) ?><?= ($hasEpisodes && $currentEpisode) ? ' 第' . ($currentEpisodeNumber ?? 1) . '集' : '' ?> - 星海影院</title>
+<!-- <meta name="keywords" content="<?= $this->escape($video['title'] ?? '') ?>,星海影院" /> -->
+<!-- <meta name="description" content="<?= $this->escape($video['title'] ?? '') ?> - 星海影院" /> -->
+<!-- <meta itemProp="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 星海影院。<?= $this->escape($video['description'] ?? '') ?>。星海影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
+<!-- <meta property="og:title" content="<?= $this->escape($video['title']) ?>" /> -->
+<!-- <meta property="og:description" content="<?= $this->escape($video['description']) ?>" /> -->
+<!-- <meta property="og:type" content="video.episode" /> -->
+<!-- <meta property="og:video:release_date" content="<?= $this->escape($video['year']) ?>-05-02" /> -->
+<!-- <meta property="og:video:tag" content="中国大陆" /> -->
+<!-- <meta property="og:video:tag" content="冒险" /> -->
+<!-- <meta property="og:video:tag" content="动画" /> -->
+<!-- <meta property="og:video:tag" content="奇幻" /> -->
+<!-- <meta property="og:site_name" content="星海影院" /> -->
+<!-- <meta property="og:url" content="https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html" /> -->
+<!-- <meta property="og:image" content="<?= $this->escape($video['poster']) ?>" /> -->
+<!-- <meta property="og:image:alt" content="<?= $this->escape($video['title']) ?>" /> -->
+<!-- <meta property="og:locale" content="zh_CN" /> -->
+<!-- <meta name="twitter:card" content="summary_large_image" /> -->
+<!-- <meta name="twitter:site" content="星海影院" /> -->
+<!-- <meta property="twitter:title" content="<?= $this->escape($video['title']) ?>" /> -->
+<!-- <meta name="twitter:description" content="<?= $this->escape($video['description']) ?>" /> -->
+<!-- <meta property="twitter:image" content="<?= $this->escape($video['poster']) ?>" /> -->
+<!-- <meta name="robots" content="index,follow" /> -->
+<!-- <link rel="canonical" href="https://m.ql83.com /play/<?= $this->escape($video['title']) ?>-<?= $this->escape($video['year']) ?>-1-<?= $this->escape($video['id']) ?>.html" /> -->
+<!-- <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
@@ -200,7 +200,7 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
               ]
       }]
   }
-</script>
+</script> -->
 <link href="/template/yuyuyy/asset/css/common.css?version=244" rel="stylesheet" type="text/css" />
 <script src="/template/yuyuyy/asset/js/jquery.js"></script>
 <script src="/template/yuyuyy/asset/js/assembly.js"></script>

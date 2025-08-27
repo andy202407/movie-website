@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no,viewport-fit=cover">
     <meta name="theme-color" content="#1a1a1a" />
     <title>页面不存在 - 星海影院</title>
-    <meta name="keywords" content="404,页面不存在,星海影院" />
-    <meta name="description" content="很抱歉，您访问的页面不存在" />
+    <!-- <meta name="keywords" content="404,页面不存在,星海影院" /> -->
+    <!-- <meta name="description" content="很抱歉，您访问的页面不存在" /> -->
     
     <link href="/template/yuyuyy/asset/css/common.css" rel="stylesheet" type="text/css" />
     <script src="/template/yuyuyy/asset/js/jquery.js"></script>

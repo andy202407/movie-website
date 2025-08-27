@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no,viewport-fit=cover">
     <meta name="theme-color" content="#1a1a1a" />
     <title><?php if ($keyword): ?>搜索: <?= $this->escape($keyword) ?><?php else: ?>搜索影片<?php endif; ?> - 星海影院</title>
-    <meta name="keywords" content="<?= $this->escape($keyword) ?>,搜索,免费观看,高清在线" />
-    <meta name="description" content="在星海影院搜索'<?= $this->escape($keyword) ?>'的相关影片" />
+    <!-- <meta name="keywords" content="<?= $this->escape($keyword) ?>,搜索,免费观看,高清在线" /> -->
+    <!-- <meta name="description" content="在星海影院搜索'<?= $this->escape($keyword) ?>'的相关影片" /> -->
     
     <link href="/template/yuyuyy/asset/css/common.css" rel="stylesheet" type="text/css" />
     <script src="/template/yuyuyy/asset/js/jquery.js"></script>
