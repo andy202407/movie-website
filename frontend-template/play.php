@@ -2218,6 +2218,23 @@ html, body {
                 }, 500);
             }
         });
+        
+        // 监听浏览器返回事件
+        window.addEventListener('popstate', function(event) {
+            console.log('浏览器返回事件触发', event.state);
+            
+            // 如果返回状态包含剧集信息
+            if (event.state && event.state.episode) {
+                const targetEpisode = event.state.episode;
+                console.log('返回目标剧集:', targetEpisode);
+                
+                // 切换到目标剧集
+                switchToEpisode(targetEpisode);
+            } else {
+                // 如果没有状态信息，执行默认返回逻辑
+                handleBrowserBack();
+            }
+        });
     });
     
     // 等待Video.js库加载完成的函数
@@ -4428,6 +4445,63 @@ html, body {
     function updateURLWithoutRefresh(episodeNumber) {
         const newUrl = `?page=play&id=<?= $video['id'] ?>&episode=${episodeNumber}`;
         window.history.pushState({ episode: episodeNumber }, '', newUrl);
+    }
+    
+    // 处理浏览器返回事件
+    function handleBrowserBack() {
+        // 获取当前剧集号
+        const currentEpisode = <?= $currentEpisodeNumber ?? 1 ?>;
+        
+        // 如果当前不是第一集，返回上一集
+        if (currentEpisode > 1) {
+            const prevEpisode = currentEpisode - 1;
+            // 更新URL
+            const newUrl = `?page=play&id=<?= $video['id'] ?>&episode=${prevEpisode}`;
+            window.history.pushState({ episode: prevEpisode }, '', newUrl);
+            
+            // 切换到上一集
+            switchToEpisode(prevEpisode);
+        } else {
+            // 如果是第一集，返回上一页（可能是列表页或首页）
+            // 尝试获取来源页面
+            const referrer = document.referrer;
+            if (referrer && referrer.includes('<?= $_SERVER['HTTP_HOST'] ?? '' ?>')) {
+                // 如果来源是同一网站，返回上一页
+                window.history.back();
+            } else {
+                // 如果没有来源或来源不是同一网站，返回首页
+                window.location.href = '?page=home';
+            }
+        }
+    }
+    
+    // 切换到指定剧集
+    function switchToEpisode(episodeNumber) {
+        console.log('切换到剧集:', episodeNumber);
+        
+        // 更新页面标题
+        const titleElement = document.querySelector('.player-title-link');
+        if (titleElement) {
+            const originalTitle = titleElement.textContent.replace(/第\d+集/g, '').trim();
+            titleElement.textContent = `${originalTitle} 第${episodeNumber}集`;
+        }
+        
+        // 高亮当前剧集
+        const episodeElements = document.querySelectorAll('.episode-item');
+        episodeElements.forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.episode == episodeNumber) {
+                item.classList.add('active');
+            }
+        });
+        
+        // 更新全局剧集状态
+        if (window.updateGlobalEpisodeState) {
+            window.updateGlobalEpisodeState(episodeNumber);
+        }
+        
+        // 显示切换提示
+        showPlayPrompt(episodeNumber);
     }
     
     // 显示播放提示

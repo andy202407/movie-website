@@ -129,7 +129,7 @@
                     <?php foreach ($categoryVideos as $video): ?>
                     <div class="public-list-box public-pic-b swiper-slide">
                         <div class="public-list-div public-list-bj">
-                            <a target="_blank" class="public-list-exp" href="?page=play&id=<?= $video['id'] ?>" title="<?= $this->escape($video['title']) ?>">
+                            <a class="public-list-exp" href="?page=play&id=<?= $video['id'] ?>" title="<?= $this->escape($video['title']) ?>">
                                 <img class="lazy lazy1 gen-movie-img mask-1"
                                      referrerpolicy="no-referrer"
                                      src="<?= $this->escape($video['poster']) ?>"
@@ -157,7 +157,7 @@
                             </a>
                         </div>
                         <div class="public-list-button">
-                            <a target="_blank" class="time-title hide ft4" href="?page=play&id=<?= $video['id'] ?>" title="<?= $this->escape($video['title']) ?>"><?= $this->escape($video['title']) ?></a>
+                            <a class="time-title hide ft4" href="?page=play&id=<?= $video['id'] ?>" title="<?= $this->escape($video['title']) ?>"><?= $this->escape($video['title']) ?></a>
                             <div class="public-list-subtitle cor5 hide ft2"><?= $this->escape($video['description']) ?></div>
                         </div>
                     </div>
