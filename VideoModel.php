@@ -257,7 +257,7 @@ class VideoModel {
         return $this->formatVideos($videos);
     }
     
-    public function getBannerVideos($limit = 3) {
+    public function getBannerVideos($limit = 100) {
         // 严格按照 is_recommended = 1 获取轮播图影片
         $sql = "SELECT v.id, v.title, v.intro, v.cover_path, v.banner_path, v.file_path, 
                        v.region, v.year, v.category_id, v.categories, v.duration, v.status, v.is_recommended,

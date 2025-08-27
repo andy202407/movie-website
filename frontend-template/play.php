@@ -82,6 +82,13 @@ if ($playVideoUrl && strpos($playVideoUrl, 'http') !== 0) {
     <meta name="theme-color" content="#1a1a1a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- iOS Safari 兼容性优化 -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="星海影院" />
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="https://vjs.zencdn.net/8.10.0/video.min.js" as="script" />
+    <link rel="preload" href="https://vjs.zencdn.net/8.10.0/video-js.css" as="style" />
     <title>免费在线看 <?= $this->escape($video['title']) ?><?= ($hasEpisodes && $currentEpisode) ? ' 第' . ($currentEpisodeNumber ?? 1) . '集' : '' ?> - 动漫在线观看 - 星海影院</title>
 <meta name="keywords" content="<?= $this->escape($video['title'] ?? '') ?>,<?= $this->escape($video['title'] ?? '') ?>在线观看,动漫,星海影院,冒险,动画,奇幻,<?= $this->escape($video['title'] ?? '') ?>免费在线观看,<?= $this->escape($video['title'] ?? '') ?>免费看,<?= $this->escape($video['title'] ?? '') ?>在线免费播放,<?= $this->escape($video['title'] ?? '') ?>高清在线观看,<?= $this->escape($video['title'] ?? '') ?>无广告播放,<?= $this->escape($video['title'] ?? '') ?>手机在线看,<?= $this->escape($video['title'] ?? '') ?>分集在线观看,<?= $this->escape($video['title'] ?? '') ?>全集免费看" />
 <meta name="description" content="免费在线看 <?= $this->escape($video['title'] ?? '') ?> - 动漫在线观看 - 星海影院。<?= $this->escape($video['description'] ?? '') ?>。星海影院提供《<?= $this->escape($video['title'] ?? '') ?>》高清完整版免费在线观看，支持手机、电脑、平板多设备播放，无广告干扰。立即免费观看《<?= $this->escape($video['title'] ?? '') ?>》！" />
@@ -872,6 +879,106 @@ html, body {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
+}
+
+/* 增加视频播放器和标题区域之间的间距 */
+.MacPlayer {
+    margin-bottom: 20px !important;
+}
+
+/* 确保标题区域有足够的上边距 */
+.switch-box {
+    margin-top: 15px !important;
+    padding-top: 10px !important;
+}
+
+/* 标题链接样式优化 */
+.player-title-link {
+    display: block;
+    margin-bottom: 8px !important;
+    padding: 5px 0 !important;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* 播放器详情信息间距优化 */
+.player-details {
+    margin-top: 8px !important;
+    margin-bottom: 15px !important;
+    line-height: 1.6;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+    .MacPlayer {
+        margin-bottom: 25px !important;
+    }
+    
+    .switch-box {
+        margin-top: 20px !important;
+        padding-top: 15px !important;
+    }
+    
+    .player-title-link {
+        margin-bottom: 12px !important;
+        padding: 8px 0 !important;
+        font-size: 16px;
+    }
+    
+    .player-details {
+        margin-top: 10px !important;
+        margin-bottom: 18px !important;
+        font-size: 14px;
+    }
+}
+
+/* PC端优化 - 增加更多间距 */
+@media (min-width: 769px) {
+    .MacPlayer {
+        margin-bottom: 45px !important;
+    }
+    
+    .switch-box {
+        margin-top: 35px !important;
+        padding-top: 30px !important;
+    }
+    
+    .player-title-link {
+        margin-bottom: 20px !important;
+        padding: 15px 0 !important;
+        font-size: 18px;
+    }
+    
+    .player-details {
+        margin-top: 20px !important;
+        margin-bottom: 30px !important;
+        font-size: 15px;
+        line-height: 1.8;
+    }
+    
+    /* 大屏幕额外优化 */
+    @media (min-width: 1200px) {
+        .MacPlayer {
+            margin-bottom: 55px !important;
+        }
+        
+        .switch-box {
+            margin-top: 40px !important;
+            padding-top: 35px !important;
+        }
+        
+        .player-title-link {
+            margin-bottom: 25px !important;
+            padding: 18px 0 !important;
+            font-size: 20px;
+        }
+        
+        .player-details {
+            margin-top: 25px !important;
+            margin-bottom: 35px !important;
+            font-size: 16px;
+        }
+    }
 }
 
 /* 中等屏幕响应式设计 */
@@ -1691,13 +1798,13 @@ html, body {
         <div class="player-left">
             <div class="player-switch fa">&#xe565;</div>
                         <div class="player-news">
-                <!-- <div class="news-list">
+                <div class="news-list">
                     <ul class="swiper-wrapper">
-                        <li class="swiper-slide"><i class="ol1">提示</i>不要轻易相信视频中的广告，谨防上当受骗!</li>
+                        <!-- <li class="swiper-slide"><i class="ol1">提示</i>不要轻易相信视频中的广告，谨防上当受骗!</li> -->
 <li class="swiper-slide"><i class="ol3">提示</i>如果无法播放请重新刷新页面。</li>
 <li class="swiper-slide"><i class="ol7">提示</i>视频载入速度跟网速有关，请耐心等待几秒钟。</li>                    
 </ul>
-                </div> -->
+                </div>
                 <!-- <span class="player-news-off cor6 fa ds-guanbi"></span> -->
             </div>
             <script>let announcementSwiper = new Swiper('.news-list', {direction: 'vertical', loop: true, autoplay: {delay: 2000, disableOnInteraction: false,}});$(".player-news-off").click(function(){$(".player-news").hide()});</script>
@@ -2015,8 +2122,11 @@ html, body {
         // 检查URL参数，确保剧集信息正确
         checkUrlParameters();
         
-        // 额外等待一下确保所有元素都加载完成
-        setTimeout(initPlayer, 100);
+        // 等待Video.js库完全加载后再初始化播放器
+        waitForVideoJS(() => {
+            // 额外等待一下确保所有元素都加载完成
+            setTimeout(initPlayer, 300);
+        });
         
         // 延迟检查缓存，避免与用户手动选择冲突
         setTimeout(() => {
@@ -2070,7 +2180,78 @@ html, body {
                 audioPlayer.src = '';
             }
         });
+        
+        // 页面可见性变化检测（iOS Safari 兼容性）
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // 页面隐藏时暂停播放
+                if (player && !player.paused()) {
+                    player.pause();
+                }
+            } else {
+                // 页面显示时恢复播放（如果之前是播放状态）
+                if (player && window.wasPlayingBeforeHidden) {
+                    player.play().catch(e => console.log('自动播放失败:', e));
+                    window.wasPlayingBeforeHidden = false;
+                }
+            }
+        });
+        
+        // 页面显示前记录播放状态
+        document.addEventListener('pagehide', function() {
+            if (player && !player.paused()) {
+                window.wasPlayingBeforeHidden = true;
+            }
+        });
+        
+        // 检测页面加载完成状态
+        window.addEventListener('load', function() {
+            console.log('页面完全加载完成');
+            // 如果播放器还没初始化，再次尝试
+            if (!player && typeof videojs !== 'undefined') {
+                setTimeout(() => {
+                    if (!player) {
+                        console.log('页面加载完成后重新初始化播放器');
+                        showLoadingTip('正在准备播放器，请稍候...');
+                        initPlayer();
+                    }
+                }, 500);
+            }
+        });
     });
+    
+    // 等待Video.js库加载完成的函数
+    function waitForVideoJS(callback, maxAttempts = 50) {
+        let attempts = 0;
+        
+        // 显示Video.js库加载提示
+        showLoadingTip('正在加载播放器组件，请稍候...');
+        
+        function checkVideoJS() {
+            attempts++;
+            
+            // 检查Video.js是否完全加载
+            if (typeof videojs !== 'undefined' && typeof videojs.getPlugin !== 'undefined') {
+                console.log('Video.js 库加载完成，尝试次数:', attempts);
+                hideLoadingTip(); // 隐藏加载提示
+                callback();
+                return;
+            }
+            
+            // 如果超过最大尝试次数，显示错误并尝试继续
+            if (attempts >= maxAttempts) {
+                console.warn('Video.js 库加载超时，尝试继续初始化');
+                hideLoadingTip(); // 隐藏加载提示
+                callback();
+                return;
+            }
+            
+            // 继续等待
+            setTimeout(checkVideoJS, 100);
+        }
+        
+        checkVideoJS();
+    }
     
     // 检查URL参数，确保剧集信息正确
     function checkUrlParameters() {
@@ -2098,10 +2279,10 @@ html, body {
     // 播放器初始化函数
     function initPlayer() {
         
-            if (!videoUrl || videoUrl === '') {
-        showPlayErrorTip('播放源错误', '视频链接失效或为空，请联系管理员');
-        return;
-    }
+        if (!videoUrl || videoUrl === '') {
+            showPlayErrorTip('播放源错误', '视频链接失效或为空，请联系管理员');
+            return;
+        }
         
         // 检查是否为音频文件
         if (window.isAudioOnly) {
@@ -2111,8 +2292,16 @@ html, body {
         
         // 检查Video.js是否加载
         if (typeof videojs === 'undefined') {
-            console.error('Video.js 未加载');
-            showPlayErrorTip('播放器错误', 'Video.js播放器未加载，请刷新页面重试');
+            console.error('Video.js 未加载，尝试延迟重试');
+            // 延迟重试，可能是库还在加载中
+            setTimeout(() => {
+                if (typeof videojs !== 'undefined') {
+                    console.log('Video.js 延迟加载成功，重新初始化播放器');
+                    initPlayer();
+                } else {
+                    showPlayErrorTip('播放器错误', 'Video.js播放器未加载，请刷新页面重试');
+                }
+            }, 1000);
             return;
         }
         
@@ -2123,7 +2312,16 @@ html, body {
             return;
         }
         
+        // 检查播放器是否已经初始化
+        if (player && player.readyState) {
+            console.log('播放器已经初始化，跳过重复初始化');
+            return;
+        }
+        
         try {
+            
+            // 显示播放器初始化提示
+            showLoadingTip('正在初始化播放器，请稍候...');
             
             // 生成唯一的存储键名
             const storageKey = `video_progress_${<?= $video['id'] ?>}_${<?= $currentEpisodeNumber ?? 1 ?>}`;
@@ -2137,6 +2335,9 @@ html, body {
                 preload: 'metadata',
                 playsinline: true, // iOS兼容
                 webkit_playsinline: true, // iOS兼容
+                x5_playsinline: true, // 微信浏览器兼容
+                x5_video_player_type: 'h5', // 微信浏览器使用H5播放器
+                x5_video_player_fullscreen: true, // 微信浏览器全屏支持
                 playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
                 controlBar: {
                     children: [
@@ -2154,117 +2355,205 @@ html, body {
                 sources: [{
                     src: videoUrl,
                     type: videoUrl.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4'
-                }]
+                }],
+                // iOS Safari 特殊配置
+                html5: {
+                    hls: {
+                        overrideNative: true, // 强制使用HLS.js
+                        enableLowInitialPlaylist: true, // 启用低初始播放列表
+                        smoothQualityChange: true, // 平滑质量切换
+                        backBufferLength: 30 // 缓冲长度
+                    },
+                    nativeAudioTracks: false, // 禁用原生音频轨道
+                    nativeVideoTracks: false, // 禁用原生视频轨道
+                    nativeTextTracks: false // 禁用原生文本轨道
+                }
             });
             
             
             // 播放器就绪处理
             player.ready(function() {
+                console.log('Video.js 播放器就绪');
+                
+                // 隐藏初始化提示
+                hideLoadingTip();
                 
                 // 延迟设置状态，确保播放器完全初始化
                 setTimeout(() => {
-                    // 设置全局状态
-                    window.player = player;
-                    window.playerReady = true;
-                    playerReady = true;
-                    
-                    // 启动播放记录保存
-                    startHistorySaving();
-                    // 确保时间显示元素存在
-                    const currentTime = player.controlBar.getChild('currentTimeDisplay');
-                    const duration = player.controlBar.getChild('durationDisplay');
-                    const timeDivider = player.controlBar.getChild('timeDivider');
-                    
-                    if (currentTime) currentTime.show();
-                    if (duration) duration.show();
-                    if (timeDivider) timeDivider.show();
-                    
-                    // 统一的元数据加载处理函数
-                    const handleMetadataLoaded = function() {
-                        // 检测是否为纯音频
-                        const mediaEl = player.el().querySelector('video, audio');
-                        if (mediaEl && mediaEl.videoWidth === 0 && mediaEl.videoHeight === 0) {
-                            window.isAudioOnly = true;
-                        }
-                        if (window.isAudioOnly) {
-                            enableBackgroundAudioMode();
+                    try {
+                        // 设置全局状态
+                        window.player = player;
+                        window.playerReady = true;
+                        playerReady = true;
+                        
+                        // 启动播放记录保存
+                        startHistorySaving();
+                        
+                        // 启动进度条检测，一旦出现数字就隐藏所有提示
+                        checkProgressBarAndHideTip();
+                        
+                        // 确保时间显示元素存在
+                        const currentTime = player.controlBar.getChild('currentTimeDisplay');
+                        const duration = player.controlBar.getChild('durationDisplay');
+                        const timeDivider = player.controlBar.getChild('timeDivider');
+                        
+                        if (currentTime) currentTime.show();
+                        if (duration) duration.show();
+                        if (timeDivider) timeDivider.show();
+                        
+                        // 统一的元数据加载处理函数
+                        const handleMetadataLoaded = function() {
+                            console.log('视频元数据加载完成');
+                            
+                            // 检测是否为纯音频
+                            const mediaEl = player.el().querySelector('video, audio');
+                            if (mediaEl && mediaEl.videoWidth === 0 && mediaEl.videoHeight === 0) {
+                                window.isAudioOnly = true;
+                            }
+                            if (window.isAudioOnly) {
+                                enableBackgroundAudioMode();
+                            }
+                            
+                            // 处理进度恢复
+                            if (window.autoRestoreProgress) {
+                                // 使用自动恢复标记
+                                player.currentTime(window.autoRestoreProgress.time);
+                                console.log('自动恢复进度:', window.autoRestoreProgress.time);
+                                window.autoRestoreProgress = null;
+                            } else {
+                                // 尝试从本地存储恢复进度
+                                const savedProgress = loadProgress();
+                                if (savedProgress && savedProgress.time > 0) {
+                                    player.currentTime(savedProgress.time);
+                                    console.log('本地恢复进度:', savedProgress.time);
+                                    showProgressTip(savedProgress);
+                                }
+                            }
+                        };
+                        
+                        // 监听元数据加载完成事件
+                        player.one('loadedmetadata', handleMetadataLoaded);
+                        
+                        // 如果元数据已经加载完成，立即处理
+                        if (player.readyState() >= 1) {
+                            handleMetadataLoaded();
                         }
                         
-                        // 处理进度恢复
-                        if (window.autoRestoreProgress) {
-                            // 使用自动恢复标记
-                            player.currentTime(window.autoRestoreProgress.time);
-                            console.log('自动恢复进度:', window.autoRestoreProgress.time);
-                            window.autoRestoreProgress = null;
-                        } else {
-                            // 尝试从本地存储恢复进度
-                            const savedProgress = loadProgress();
-                            if (savedProgress && savedProgress.time > 0) {
-                                player.currentTime(savedProgress.time);
-                                console.log('本地恢复进度:', savedProgress.time);
-                                showProgressTip(savedProgress);
+                        // 添加加载超时处理
+                        setTimeout(() => {
+                            if (player.readyState() === 0) {
+                                console.warn('视频加载超时，尝试重新加载');
+                                player.src({
+                                    src: videoUrl,
+                                    type: videoUrl.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4'
+                                });
+                                player.load();
                             }
-                        }
-                    };
-                    
-                    // 监听元数据加载完成事件
-                    player.one('loadedmetadata', handleMetadataLoaded);
-                    
-                    // 如果元数据已经加载完成，立即处理
-                    if (player.readyState() >= 1) {
-                        handleMetadataLoaded();
+                        }, 10000); // 10秒超时
+                        
+                    } catch (error) {
+                        console.error('播放器就绪处理错误:', error);
+                        // 如果出错，尝试重新初始化
+                        setTimeout(() => {
+                            console.log('尝试重新初始化播放器');
+                            if (player) {
+                                player.dispose();
+                                player = null;
+                            }
+                            setTimeout(initPlayer, 500);
+                        }, 1000);
                     }
                     
-                }, 500); // 延迟500ms确保播放器完全初始化
+                }, 800); // 延迟800ms确保播放器完全初始化，iOS需要更长时间
             });
             
             
                     // 错误处理
-        player.on('error', function(err) {
-            console.error('播放器错误:', err);
-            console.error('错误详情:', player.error());
-            
-            // 获取具体错误信息
-            const error = player.error();
-            if (error) {
-                let errorMessage = '';
-                let errorTitle = '';
-                
-                switch (error.code) {
-                    case 1:
-                        errorTitle = '播放错误';
-                        errorMessage = '视频加载失败，可能是网络问题或文件不存在';
-                        break;
-                    case 2:
-                        errorTitle = '网络错误';
-                        errorMessage = '网络连接异常，请检查网络设置';
-                        break;
-                    case 3:
-                        errorTitle = '解码错误';
-                        errorMessage = '视频格式不支持或文件损坏';
-                        break;
-                    case 4:
-                        errorTitle = '源错误';
-                        errorMessage = '视频源无法访问，请检查播放源是否正确';
-                        break;
-                    default:
-                        errorTitle = '播放错误';
-                        errorMessage = '未知错误，请刷新页面重试';
-                }
-                
-                // 显示错误提示
-                showPlayErrorTip(errorTitle, errorMessage);
-            }
-        });
+                    player.on('error', function(err) {
+                        console.error('播放器错误:', err);
+                        console.error('错误详情:', player.error());
+                        
+                        // 隐藏加载提示
+                        hideLoadingTip();
+                        
+                        // 获取具体错误信息
+                        const error = player.error();
+                        if (error) {
+                            let errorMessage = '';
+                            let errorTitle = '';
+                            
+                            switch (error.code) {
+                                case 1:
+                                    errorTitle = '播放错误';
+                                    errorMessage = '视频加载失败，可能是网络问题或文件不存在';
+                                    break;
+                                case 2:
+                                    errorTitle = '网络错误';
+                                    errorMessage = '网络连接异常，请检查网络设置';
+                                    break;
+                                case 3:
+                                    errorTitle = '解码错误';
+                                    errorMessage = '视频格式不支持或文件损坏';
+                                    break;
+                                case 4:
+                                    errorTitle = '源错误';
+                                    errorMessage = '视频源无法访问，请检查播放源是否正确';
+                                    break;
+                                default:
+                                    errorTitle = '播放错误';
+                                    errorMessage = '未知错误，请刷新页面重试';
+                            }
+                            
+                            // 显示错误提示
+                            showPlayErrorTip(errorTitle, errorMessage);
+                            
+                            // 尝试自动恢复
+                            setTimeout(() => {
+                                console.log('尝试自动恢复播放器');
+                                try {
+                                    // 重新加载视频源
+                                    player.src({
+                                        src: videoUrl,
+                                        type: videoUrl.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4'
+                                    });
+                                    player.load();
+                                    
+                                    // 如果还是失败，尝试重新初始化播放器
+                                    setTimeout(() => {
+                                        if (player.error()) {
+                                            console.log('自动恢复失败，重新初始化播放器');
+                                            if (player) {
+                                                player.dispose();
+                                                player = null;
+                                            }
+                                            setTimeout(initPlayer, 1000);
+                                        }
+                                    }, 5000);
+                                } catch (recoveryError) {
+                                    console.error('自动恢复失败:', recoveryError);
+                                }
+                            }, 3000);
+                        }
+                    });
             
             // 加载中提示
             player.on('loadstart', function() {
-                // 开始加载视频
+                console.log('开始加载视频');
             });
 
             // 加载完成
             player.on('loadeddata', function() {
-                // 视频加载完成
+                console.log('视频加载完成');
+            });
+            
+            // 可以播放时（播放按钮出现）
+            player.on('canplay', function() {
+                console.log('视频可以播放，播放按钮出现');
+            });
+            
+            // 播放开始时
+            player.on('play', function() {
+                console.log('视频开始播放');
             });
             
             // 播放过程中定期保存进度（每5秒）
@@ -2368,6 +2657,7 @@ html, body {
             
         } catch (error) {
             console.error('创建播放器时出错:', error);
+            hideLoadingTip(); // 隐藏加载提示
             showPlayErrorTip('播放器初始化失败', '播放器创建失败: ' + error.message + '，请刷新页面重试');
         }
     }
@@ -2375,6 +2665,9 @@ html, body {
             // 音频播放器初始化函数
         function initAudioPlayer() {
             try {
+                // 显示音频播放器初始化提示
+                showLoadingTip('正在初始化音频播放器，请稍候...');
+                
                 // 切换到音频模式
                 isAudioMode = true;
                 
@@ -2402,6 +2695,11 @@ html, body {
                 // 音频事件监听
                 audioPlayer.addEventListener('loadedmetadata', function() {
                     audioPlayerReady = true;
+                    hideLoadingTip(); // 隐藏加载提示
+                    
+                    // 启动进度条检测，一旦出现数字就隐藏所有提示
+                    checkProgressBarAndHideTip();
+                    
                     updateAudioDuration();
                     startAudioProgressUpdate();
                     startAudioVisualizer();
@@ -2414,9 +2712,17 @@ html, body {
                     }
                 });
                 
+                // 音频可以播放时
+                audioPlayer.addEventListener('canplay', function() {
+                    // 音频可以播放
+                    hideLoadingTip(); // 隐藏加载提示
+                    console.log('音频可以播放');
+                });
+                
                 audioPlayer.addEventListener('play', function() {
                     updatePlayPauseButton(true);
                     startAudioVisualizer();
+                    hideLoadingTip(); // 播放开始时隐藏加载提示
                 });
                 
                 audioPlayer.addEventListener('pause', function() {
@@ -2459,25 +2765,27 @@ html, body {
                         }
                     }
                     
-                    // 显示错误提示
-                    showPlayErrorTip(errorTitle, errorMessage);
-                });
-                
-                // 绑定控制按钮事件
-                bindAudioControls();
-                
-                // 启用后台播放模式
-                enableBackgroundAudioMode();
-                
-                // 启动播放记录保存
-                startHistorySaving();
-                
-                console.log('音频播放器初始化完成');
-                
-            } catch (error) {
-                console.error('音频播放器初始化失败:', error);
-                showPlayErrorTip('初始化错误', '音频播放器初始化失败');
-            }
+                                    // 显示错误提示
+                hideLoadingTip(); // 隐藏加载提示
+                showPlayErrorTip(errorTitle, errorMessage);
+            });
+            
+            // 绑定控制按钮事件
+            bindAudioControls();
+            
+            // 启用后台播放模式
+            enableBackgroundAudioMode();
+            
+            // 启动播放记录保存
+            startHistorySaving();
+            
+            console.log('音频播放器初始化完成');
+            
+        } catch (error) {
+            console.error('音频播放器初始化失败:', error);
+            hideLoadingTip(); // 隐藏加载提示
+            showPlayErrorTip('初始化错误', '音频播放器初始化失败');
+        }
         }
     
     // 更新音频播放器信息
@@ -4185,15 +4493,16 @@ html, body {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.8);
             color: white;
             padding: 20px 30px;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 14px;
             z-index: 10000;
             text-align: center;
-            max-width: 300px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            max-width: 280px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.15);
         `;
         
         tip.innerHTML = `
@@ -4201,15 +4510,15 @@ html, body {
                 <div class="loading-spinner" style="
                     width: 40px;
                     height: 40px;
-                    border: 4px solid rgba(255,255,255,0.3);
-                    border-top: 4px solid #4ecdc4;
+                    border: 3px solid rgba(255,255,255,0.2);
+                    border-top: 3px solid #4ecdc4;
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
                     margin: 0 auto;
                 "></div>
             </div>
             <div>
-                <p style="margin: 0; font-size: 14px;">${message}</p>
+                <p style="margin: 0; font-size: 14px; line-height: 1.3;">${message}</p>
             </div>
         `;
         
@@ -4223,9 +4532,13 @@ html, body {
                     100% { transform: rotate(360deg); }
                 }
             `;
+            document.head.appendChild(style);
         }
         
         document.body.appendChild(tip);
+        
+        // 启动进度条检测，一旦出现数字就隐藏提示
+        checkProgressBarAndHideTip();
     }
     
     // 隐藏加载提示
@@ -4234,6 +4547,32 @@ html, body {
         if (tip) {
             tip.remove();
         }
+    }
+    
+    // 检测进度条是否出现数字，如果出现则隐藏加载提示
+    function checkProgressBarAndHideTip() {
+        // 检查视频播放器的进度条
+        const videoProgress = document.querySelector('.vjs-progress-control .vjs-current-time-display');
+        if (videoProgress && videoProgress.textContent && videoProgress.textContent.trim() !== '0:00') {
+            hideLoadingTip();
+            return;
+        }
+        
+        // 检查音频播放器的进度条
+        const audioProgress = document.querySelector('.audio-progress .current-time');
+        if (audioProgress && audioProgress.textContent && audioProgress.textContent.trim() !== '0:00') {
+            hideLoadingTip();
+            return;
+        }
+        
+        // 检查播放器是否已经可以播放
+        if (window.player && window.player.readyState && window.player.readyState() >= 2) {
+            hideLoadingTip();
+            return;
+        }
+        
+        // 如果还没有进度数字且播放器还没准备好，继续检测
+        setTimeout(checkProgressBarAndHideTip, 300);
     }
     
     // 同步所有状态，保持与刷新切换的一致性

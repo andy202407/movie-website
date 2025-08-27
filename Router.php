@@ -153,8 +153,8 @@ class Router {
         }
         
         $categories = $this->videoModel->getAllCategories();
-        $recommended = $this->videoModel->getRecommendedVideos(6);
-        $bannerVideos = $this->videoModel->getBannerVideos(3); // 轮播图用的banner影片
+        $recommended = $this->videoModel->getRecommendedVideos(100);
+        $bannerVideos = $this->videoModel->getBannerVideos(100); // 轮播图用的banner影片
         
         // 创建分类索引映射
         $categoryMap = [];
